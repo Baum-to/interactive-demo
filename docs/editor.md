@@ -229,6 +229,24 @@ sentence, timed in proportion to its length. An error answer's `{ "error" }`
 message is shown under the step. `maxChars` caps the text sent in one
 request. `dev` does not implement this route.
 
+A host whose pages are not the CLI's can also point the header's links:
+
+```json
+{
+  "links": {
+    "back": { "href": "/demos/{slug}", "label": "Back to demo" },
+    "demo": { "href": "/demos/{slug}" }
+  }
+}
+```
+
+`{slug}` becomes the open demo's slug. **Back** (the arrow left of the
+logo) returns to the page the editor was opened from when that page is on
+the same host; otherwise it follows `back`, or goes to `/` — `dev`'s demo
+index — when the host names none. **Open demo** follows `demo`, or the
+demo's page under `dev`. An `href` must be a path on the host or an
+http(s) URL; anything else is ignored.
+
 ## Working on the runtime at the same time
 
 One trap worth knowing if you are developing this repo rather than using it.
