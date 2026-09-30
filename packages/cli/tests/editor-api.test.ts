@@ -53,6 +53,26 @@ describe('dev server editor API', () => {
     expect(body.binary).toEqual(['assets/shot.png']);
   });
 
+  it('advertises no optional host capabilities, as JSON rather than the editor page', async () => {
+    const res = await fetch(`${handle!.url}__demo/editor/capabilities`);
+    expect(res.status).toBe(200);
+    expect(res.headers.get('content-type')).toContain('application/json');
+    expect(res.headers.get('cache-control')).toBe('no-store');
+    expect(await res.json()).toEqual({});
+    const post = await fetch(`${handle!.url}__demo/editor/capabilities`, { method: 'POST' });
+    expect(post.status).toBe(405);
+  });
+
+  it('does not implement voiceover generation', async () => {
+    const res = await fetch(`${handle!.url}__demo/editor/demos/tour/voiceover`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ stepId: 's1', text: 'Hello.', voiceId: 'x' }),
+    });
+    expect(res.status).toBe(404);
+    expect(res.headers.get('content-type')).toContain('application/json');
+  });
+
   it('serves the embed snippets for a demo with a host placeholder', async () => {
     const res = await fetch(`${handle!.url}__demo/editor/demos/tour/embed`);
     expect(res.status).toBe(200);

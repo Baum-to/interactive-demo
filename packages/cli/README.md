@@ -143,5 +143,6 @@ npx interactive-demo logout
 - `/__demo/editor/` — the editor; open a demo at `/__demo/editor/#/<slug>` (the `/` list links to it)
 - `/__demo/demos`, `/__demo/demo/<slug>` — JSON used by the editor
 - `/__demo/editor/demos/<slug>/files` (GET, PUT) and `/__demo/editor/demos/<slug>/assets?name=<file>` (POST) — the editor's read/write API
+- `/__demo/editor/capabilities` (GET) — optional host features for the editor; `dev` offers none and answers `{}`
 
 The `__demo` slug is reserved for these routes.

@@ -13,6 +13,11 @@ export { MAX_ASSET_BYTES, generatedAssetId } from './asset-helpers.js';
  * Internal HTTP API the local editor uses to read and write a demo. Mounted
  * by `dev` under `/__demo/editor/`; never part of `build` output.
  *
+ *   GET    /__demo/editor/capabilities
+ *          → {} — optional features of the host serving the editor. Other
+ *            hosts may advertise features here (e.g. `voiceover` for
+ *            text-to-speech, with its voices); the CLI offers none, and the
+ *            editor hides any feature whose key is absent.
  *   GET    /__demo/editor/demos/:slug/files
  *          → { files: { "<path>": "<text>", … } } for every text file in the
  *            demo folder (demo.config.json, assets.json, …). Binary assets are
@@ -40,6 +45,7 @@ export { MAX_ASSET_BYTES, generatedAssetId } from './asset-helpers.js';
 
 export const EDITOR_API_PREFIX = '/__demo/editor/';
 export const EDITOR_API_DEMOS_PREFIX = `${EDITOR_API_PREFIX}demos/`;
+export const EDITOR_API_CAPABILITIES_PATH = `${EDITOR_API_PREFIX}capabilities`;
 
 const TEXT_EXTENSIONS = new Set(['.json', '.md', '.txt', '.svg', '.css', '.html', '.js']);
 const MAX_JSON_BODY = 20_000_000;
@@ -244,6 +250,15 @@ export async function handleEditorApi(
 ): Promise<boolean> {
   const rawUrl = req.url ?? '';
   const [pathname, query = ''] = rawUrl.split('?') as [string, string?];
+  if (pathname === EDITOR_API_CAPABILITIES_PATH) {
+    if (req.method !== 'GET' && req.method !== 'HEAD') {
+      sendJson(res, 405, { error: 'method not allowed' });
+      return true;
+    }
+    // Hosts may advertise optional editor features here; the CLI offers none.
+    sendJson(res, 200, {});
+    return true;
+  }
   if (!pathname.startsWith(EDITOR_API_DEMOS_PREFIX)) return false;
 
   const rest = pathname.slice(EDITOR_API_DEMOS_PREFIX.length);

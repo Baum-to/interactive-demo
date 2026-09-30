@@ -31,7 +31,7 @@ import {
   BRAND_DIR,
 } from '../page.js';
 import { standaloneDemoName } from '../standalone-demo.js';
-import { EDITOR_API_DEMOS_PREFIX, handleEditorApi } from '../dev/editor-api.js';
+import { EDITOR_API_CAPABILITIES_PATH, EDITOR_API_DEMOS_PREFIX, handleEditorApi } from '../dev/editor-api.js';
 import { EDITOR_STATIC_PREFIX, resolveEditorDir, serveEditorStatic } from '../dev/editor-static.js';
 
 export interface DevOptions {
@@ -735,7 +735,9 @@ export async function runDev(options: DevOptions): Promise<DevHandle> {
               return;
             }
 
-            if (pathname.startsWith(EDITOR_API_DEMOS_PREFIX)) {
+            // The editor's JSON API goes ahead of the editor's static SPA,
+            // whose fallback would otherwise answer these paths with index.html.
+            if (pathname.startsWith(EDITOR_API_DEMOS_PREFIX) || pathname === EDITOR_API_CAPABILITIES_PATH) {
               void handleEditorApi(req as IncomingMessage, res, {
                 findDemo: (slug) => state.bySlug.get(slug) ?? null,
                 onChanged: () => void refresh(),
