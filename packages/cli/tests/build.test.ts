@@ -4,7 +4,10 @@ import { existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { runInit } from '../src/commands/init';
-import { runBuild } from '../src/commands/build';
+import { formatBuildSummary, runBuild } from '../src/commands/build';
+import { embedSnippetsFor } from '../src/dev/editor-api';
+import { playerSizeForConfig } from '../src/player-size';
+import { parseDemo } from '@inkly-org/interactive-demo/schema';
 import { resolveRuntimeFile } from '../src/page';
 import { PROJECT_FILE } from '../src/project';
 
@@ -152,5 +155,38 @@ describe('runBuild', () => {
     expect(html).toContain('src="./brand/mark.svg"');
     expect(html).toContain('class="demo-page-cta is-primary"');
     expect((await stat(join(dir, 'brand', 'mark.svg'))).isFile()).toBe(true);
+  });
+});
+
+describe('formatBuildSummary', () => {
+  const config = parseDemo({
+    id: 'buildSum0001',
+    version: 1,
+    steps: [{
+      id: 's1',
+      kind: 'content',
+      background: { type: 'image', src: 'assets/a.png', naturalWidth: 1440, naturalHeight: 900 },
+    }],
+  });
+
+  it('prints the same snippets as `embed` and the editor, sized to the demo', () => {
+    const text = formatBuildSummary('/p/dist', 'dist', [
+      { slug: 'tour', config },
+      { slug: 'other', config },
+    ]);
+    const expected = embedSnippetsFor('tour', playerSizeForConfig(config));
+    expect(text).toContain('  tour/\n  other/\n');
+    expect(text).toContain(expected.inline);
+    expect(text).toContain('src="https://YOUR-HOST/tour/?embed=inline"');
+    expect(text).toContain('calc(100cqw * 900 / 1440 + 52px + 2px)');
+    expect(text).toContain(expected.popup.loader);
+    expect(text).toContain(expected.popup.triggers.html);
+    expect(text).toContain('wherever you deploy dist/; the other demos differ only in the path.');
+    expect(text).toContain('interactive-demo publish');
+    expect(text).not.toContain('width="960"');
+  });
+
+  it('prints no snippet when nothing was built', () => {
+    expect(formatBuildSummary('/p/dist', 'dist', [])).toBe('Built 0 demos into /p/dist\n\n');
   });
 });

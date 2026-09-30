@@ -10,6 +10,8 @@ import {
   type SyncAssetPlan,
   type SyncFinalizedUpload,
 } from '../publish/sync.js';
+import { formatEmbedSnippet } from '../publish/embed-snippets.js';
+import { playerSizeForConfig } from '../player-size.js';
 import { resolveRuntimeFile } from '../page.js';
 import { isAbsoluteBrandRef, type ProjectBrand } from '../project.js';
 import { persistDemoId } from '../demo-id-maintenance.js';
@@ -302,13 +304,17 @@ async function publishResolvedDemo(args: {
           `  without --new to update the existing deployment in place instead.\n`,
       );
     }
-    out(options.silent, `\nEmbed it with\n${formatIframeSnippet(url)}\n\nFor a pop-up button instead: interactive-demo embed --mode popup\n`);
+    // The same inline snippet `embed` prints, sized to this demo.
+    const inline = formatEmbedSnippet({
+      mode: 'inline',
+      url,
+      origin: apiBase,
+      label: 'Try the demo',
+      size: playerSizeForConfig(demo.config),
+    });
+    out(options.silent, `\n${inline}\nFor a pop-up button instead: interactive-demo embed --mode popup\n`);
   }
   return result;
-}
-
-export function formatIframeSnippet(url: string): string {
-  return `  <iframe src="${url}" width="960" height="600" allow="fullscreen" loading="lazy"></iframe>`;
 }
 
 /**

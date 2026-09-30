@@ -258,7 +258,12 @@ describe('interactive-demo publish', () => {
     expect(result.url).toBe('https://example.test/p/fresh');
     expect(writes.join('')).toContain('Demo published');
     expect(writes.join('')).toContain('NEW deployment');
-    expect(writes.join('')).toContain('<iframe src="https://example.test/p/fresh"');
+    // The same inline snippet `embed` prints: chrome-free, sized to the demo.
+    const printed = writes.join('');
+    expect(printed).toContain('Inline embed — paste into your page:');
+    expect(printed).toContain('src="https://example.test/p/fresh?embed=inline"');
+    expect(printed).toContain('calc(100cqw * 600 / 1200 + 52px + 2px)');
+    expect(printed).not.toContain('width="960"');
   });
 
   it('fails when the config references a file that is not there', async () => {

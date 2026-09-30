@@ -1,8 +1,11 @@
 import { copyFile, cp, mkdir, readdir, rm, writeFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
+import type { Demo } from '@inkly-org/interactive-demo/schema';
 import { basename, join, relative, resolve, sep } from 'node:path';
 import { ASSETS_DIR } from '../assets.js';
 import { brandLogoSourcePath, loadProject, orderDemos } from '../project.js';
+import { EMBED_HOST_PLACEHOLDER, embedSnippetsFor } from '../dev/editor-api.js';
+import { playerSizeForConfig } from '../player-size.js';
 import {
   EMBED_LOADER_FILE,
   PLAYER_BACKGROUND_FILES,
@@ -107,6 +110,35 @@ async function assertOutDirIsSafe(
   );
 }
 
+/**
+ * What `build` prints: the folders it wrote, then the embed snippets for the
+ * first demo, built by the same code as `embed` and the editor's Share
+ * dialog so every surface hands out one shape. The host is a placeholder —
+ * only the person deploying the folder knows where it will live.
+ */
+export function formatBuildSummary(
+  outDir: string,
+  outName: string,
+  built: Array<{ slug: string; config: Demo }>,
+): string {
+  const lines = built.map((d) => `  ${d.slug}/`).join('\n');
+  let text = `Built ${built.length} demo${built.length === 1 ? '' : 's'} into ${outDir}\n${lines}\n`;
+  const first = built[0];
+  if (!first) return text;
+  const snippets = embedSnippetsFor(first.slug, playerSizeForConfig(first.config));
+  text +=
+    `\nDeploy the folder as static files and embed ${first.slug} inline:\n\n` +
+    `${snippets.inline}\n\n` +
+    `or open it from a button in a pop-up:\n\n` +
+    `${snippets.popup.loader}\n` +
+    `${snippets.popup.triggers.html}\n\n` +
+    `Replace ${EMBED_HOST_PLACEHOLDER} with wherever you deploy ${outName}/` +
+    `${built.length > 1 ? '; the other demos differ only in the path' : ''}.\n\n` +
+    `Don't want to host it? \`interactive-demo publish\` puts the demo online\n` +
+    `and prints its URL; the snippets above are the same apart from the host.\n`;
+  return text;
+}
+
 export async function runBuild(options: BuildOptions): Promise<BuildResult> {
   const loaded = await loadProject(options.cwd);
   const outDir = resolve(loaded.root, options.out ?? 'dist');
@@ -121,6 +153,7 @@ export async function runBuild(options: BuildOptions): Promise<BuildResult> {
   await writeFile(join(outDir, BUILD_MARKER), 'interactive-demo\n', 'utf8');
 
   const built: BuildResult['demos'] = [];
+  const summary: Parameters<typeof formatBuildSummary>[2] = [];
   for (const demo of orderDemos(loaded.demos, loaded.project)) {
     const dir = join(outDir, ...demo.slug.split('/'));
     await mkdir(dir, { recursive: true });
@@ -163,6 +196,7 @@ export async function runBuild(options: BuildOptions): Promise<BuildResult> {
     }
 
     built.push({ slug: demo.slug, dir });
+    summary.push({ slug: demo.slug, config: demo.config });
   }
 
   // The pop-up loader sits once at the output root, next to the demo folders.
@@ -170,18 +204,7 @@ export async function runBuild(options: BuildOptions): Promise<BuildResult> {
   if (loaderSrc) await copyFile(loaderSrc, join(outDir, EMBED_LOADER_FILE));
 
   if (!options.silent) {
-    const lines = built.map((d) => `  ${d.slug}/`).join('\n');
-    process.stdout.write(
-      `Built ${built.length} demo${built.length === 1 ? '' : 's'} into ${outDir}\n${lines}\n\n` +
-        `Deploy the folder as static files and embed a demo with\n` +
-        `  <iframe src="https://<your-host>/<slug>/" width="960" height="600" allow="fullscreen"></iframe>\n` +
-        `or open it from a button in a pop-up:\n` +
-        `  <script src="https://<your-host>/embed.js" async></script>\n` +
-        `  <button onclick="InteractiveDemo.open('https://<your-host>/<slug>/')">Try the demo</button>\n` +
-        `  (replace <your-host> with wherever you deploy the dist/ folder)\n\n` +
-        `Don't want to host it? \`interactive-demo publish\` puts the demo online\n` +
-        `and prints its URL; the snippets above are the same apart from the host.\n`,
-    );
+    process.stdout.write(formatBuildSummary(outDir, relative(loaded.root, outDir), summary));
   }
 
   return { projectRoot: loaded.root, outDir, demos: built };
