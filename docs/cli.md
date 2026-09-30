@@ -1,8 +1,10 @@
 # The CLI
 
 `interactive-demo` scaffolds a project, records a demo from a live web app,
-previews it with the editor, validates it and builds static files. Publishing
-to the hosting service is optional; everything else works offline.
+previews it with the editor and validates it. Then `publish` puts it online
+and prints a link, or `build` writes static files you host yourself. Only
+`login`, `publish` and `embed` talk to a server; everything else works
+offline.
 
 ```sh
 npx @inkly-org/interactive-demo-cli init my-demos
@@ -56,8 +58,10 @@ interactive-demo init --from <dir|zip>
 `init <name>` creates `<name>/` and writes `README.md`, `.gitignore`,
 `package.json`, `interactive-demo.json` and — unless you pass
 `--no-starter-demo` — `demos/getting-started/` with a three-step demo (an
-intro cover, one content step on a placeholder SVG, an outro cover) and the
-placeholder in `assets/`. It prints the next steps.
+intro cover, one labelled content step on a placeholder PNG with a hotspot
+on it, an outro cover) and the placeholder in `assets/`. The generated
+`README.md` covers capturing a real demo, publishing it and hosting it
+yourself. It prints the next steps.
 
 `init --demo <slug>` writes `demos/<slug>/demo.config.json` and
 `demos/<slug>/assets/placeholder.png`, mints the demo's permanent id and
@@ -69,13 +73,14 @@ everything beside it, skipping `node_modules/` and `.git/`. The source must
 hold a schema-valid `demo.config.json`. Its id is kept if it is a valid
 12-character id, and re-minted if not.
 
-The source may also be a `.zip` of such a folder, which is what the capture
-extension downloads. It is unpacked to a temporary directory and imported the
+The source may also be a `.zip` of such a folder, such as a capture exported
+as a zip. It is unpacked to a temporary directory and imported the
 same way, so there is no unzip step; a zip that wraps the demo in a
 `<slug>/` folder and one that holds `demo.config.json` at its root both work.
 
 Without `--demo`, the slug is taken from the source name — `onboarding.zip`
-becomes `demos/onboarding/`. Pass `--demo` to choose a different one.
+becomes `demos/onboarding/`. That name has to be a valid kebab-case slug;
+if it isn't (`Onboarding Flow.zip`), pass `--demo` to choose one.
 
 ```sh
 interactive-demo init acme-demos --theme mono
@@ -91,9 +96,12 @@ Common failures:
   it — pick another name or remove it.
 - The name is not a valid slug, or is one of the reserved words. The error
   names the rule it broke.
-- `--demo` outside a project. Run `init <name>` first, or `cd` into the
-  project.
+- `--demo` or `--from` outside a project. Run `init <name>` first, or `cd`
+  into the project.
 - `--demo <slug>` where `demos/<slug>` already exists.
+- A slug that isn't kebab-case or is reserved — including one taken from a
+  `--from` source name. Pass `--demo <slug>`.
+- A `--from` source with no schema-valid `demo.config.json`.
 
 ## dev
 
@@ -124,8 +132,12 @@ on your network. What it serves:
 | `/__demo/editor/` | The editor. `/__demo/editor/#/<slug>` opens one demo. |
 | `/<slug>/assets/…` | The demo's media, served from `demos/<slug>/assets/`. |
 | `/<slug>/player.js`, `player.css`, `player-fonts.css` | The player, from the installed runtime package. |
-| `/__demo/player.js`, `/__demo/player.css`, `/__demo/player-fonts.css` | The same files at a fixed path, for the editor shell. |
+| `/<slug>/fonts/…`, `/<slug>/backgrounds/…` | The font files and cover backdrop `player-fonts.css` points at. |
+| `/<slug>/brand/…` | The project's logo, when `brand.logo` is a project file — where `build` copies it. |
+| `/__demo/player.js`, `/__demo/player.css`, `/__demo/player-fonts.css`, `/__demo/fonts/…`, `/__demo/backgrounds/…` | The same files at a fixed path, for the editor shell. |
 | `/__demo/demos`, `/__demo/demo/<slug>` | JSON: the demo list, and one demo's config. |
+| `/__demo/editor/demos/<slug>/files`, `…/assets`, `…/embed` | The editor's read/write API: the demo's files, its `assets/` folder, and the Share dialog's snippets. |
+| `/__demo/editor/capabilities` | Optional host features for the editor. `dev` answers `{}`. |
 
 On startup it prints the URL, the project name, the demo count, up to ten demo
 URLs and the editor URL.
@@ -148,9 +160,10 @@ Common failures:
 - `Player bundle not found` (HTTP 503 on `player.js`). The runtime package
   isn't resolvable — run `npm install`, or build the runtime if you are
   working in this repo's workspace.
-- The file watcher only reacts to `demo.config.json`. Dropping a new file into
-  `assets/` doesn't trigger a reload, but the file is served as soon as
-  something asks for it.
+- The file watcher only reacts to `demo.config.json` and
+  `interactive-demo.json`. Dropping a new file into `assets/` doesn't
+  trigger a reload, but the file is served as soon as something asks for
+  it.
 
 ## capture
 
@@ -217,7 +230,8 @@ it has no place in the command surface and you never invoke it yourself.
 readable file names under `assets/`: `screen-001.png`, and for a video step
 `screen-002.webm` plus `screen-002-poster.png`. With `--compress-images` the
 stills are `.webp`. The slug comes from the demo name, with `-2`, `-3` … if it
-is taken. It then tears the session down — Chrome, the listener and the
+is taken, and is appended to the project's `demos` list when the project
+keeps one. It then tears the session down — Chrome, the listener and the
 scratch files — and prints the demo folder, the step count and one label per
 step so you can read the flow back without opening the JSON.
 
@@ -252,8 +266,10 @@ interactive-demo capture start https://app.example.com --profile acme
 ```
 
 The cookies persist in the profile, so later captures with the same
-`--profile` skip the login. A bare name maps to a folder under the capture
-home; a value with a path separator is used as a directory. `capture profiles`
+`--profile` skip the login. Without `--profile`, `capture login` names the
+profile after the URL's host — `https://app.example.com/login` gets
+`app-example-com` — and prints it. A bare name maps to a folder under the
+capture home; a value with a path separator is used as a directory. `capture profiles`
 lists what you have, with whether each one has cookies yet. `capture login`
 cannot be combined with `--connect-to-browser` — an attached browser owns its
 own profile.
@@ -313,12 +329,13 @@ Writes one self-contained static folder per demo. Deploy it to any static
 host; nothing in it depends on where it is served from.
 
 ```sh
-interactive-demo build [--out <dir>]
+interactive-demo build [--out <dir>] [--force]
 ```
 
 | Flag | Default | What it does |
 |---|---|---|
 | `--out <dir>` | `dist` | Output folder, relative to the project root. |
+| `--force` | off | Empty and reuse a non-empty output folder that `build` did not create. |
 
 Per demo, under `<out>/<slug>/`:
 
@@ -332,15 +349,24 @@ brand/…             the project's logo, if brand.logo is a project file
 ```
 
 `<out>/embed.js` — the pop-up loader — is written once at the output root,
-next to the demo folders. The command prints what it built plus an iframe
-snippet and a pop-up snippet.
+next to the demo folders. The command prints what it built plus, for the
+first demo, the inline iframe and pop-up snippets — the same ones `embed`
+prints, with a placeholder host to replace with wherever you deploy.
 
-**`build` deletes the output folder first.** Don't point `--out` at a
-directory holding anything you want to keep.
+**`build` empties the output folder first**, so it guards which folder it
+will empty. It writes a `.interactive-demo-build` marker into its output,
+and on the next run it empties a folder that is missing, empty, or carries
+that marker (or is recognisably an older build: only demo folders and
+`embed.js`). Any other non-empty folder is refused unless you pass
+`--force`. The project folder, or a folder containing it, is always
+refused.
 
 Common failures:
 
 - Not inside a project.
+- `Refusing to empty <dir>` — the output folder has files `build` didn't
+  write. Delete it, pick another `--out`, or pass `--force`.
+- `Refusing to build into <dir>` — `--out` points at the project folder.
 - `Player bundle not found` — the runtime package isn't resolvable next to the
   CLI. `npm install`, or build the runtime in the workspace.
 - A media path with no file behind it isn't caught here; `assets/` is copied
@@ -380,7 +406,7 @@ Only these two commands need it — `init`, `dev`, `capture`, `validate` and
 `build` never talk to a server.
 
 ```sh
-interactive-demo login [--token <token>] [--no-open] [--status] [--json]
+interactive-demo login [--token <token>] [--no-open] [--local] [--status] [--json]
 interactive-demo logout
 ```
 
@@ -419,8 +445,10 @@ Common failures:
 
 ## publish
 
-Uploads a demo's media, then freezes the config as a hosted deployment.
-Publishing is optional — `build` gives you files you can host yourself.
+Puts a demo on the hosting service and prints its URL: the one-command way
+to a link you can send or embed. To host the files yourself instead, use
+`build` — the embed snippets are the same either way, only the origin
+differs.
 
 ```sh
 interactive-demo publish [<path>|--demo <slug>] [--new] [--json]
@@ -447,8 +475,8 @@ pointing at it picks up the new version. `--new` mints a separate URL and
 leaves the old one serving the old demo; when that would orphan an existing
 deployment, the command warns after the fact.
 
-On success it prints the URL and an iframe snippet. `--list` prints one line
-per demo with its URL or `(not published)`.
+On success it prints the URL and the same sized iframe snippet `embed`
+prints. `--list` prints one line per demo with its URL or `(not published)`.
 
 Common failures:
 
