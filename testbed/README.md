@@ -97,8 +97,12 @@ These need eyes:
    `interactive-demo capture start https://example.com`, click a few times,
    `interactive-demo capture stop`.
 
-The editor rewrites `demo.config.json` when it opens a demo (it drops
-`$schema` and reorders keys). After poking at the example project, restore it:
+Opening a demo in the editor leaves `demo.config.json` alone, and an edit
+changes only what it touched: `$schema` stays first, key order is kept, and
+unset defaults stay out (see [docs/editor.md](../docs/editor.md); the codec
+tests hold both example configs to a byte-for-byte round trip). The manual
+pass does edit files, though, so after poking at the example project restore
+it:
 
 ```
 git checkout -- examples/

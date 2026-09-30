@@ -4,7 +4,7 @@
  * `capture` command drives its sessions through packages/cli/src/capture.
  */
 import { spawn } from 'node:child_process';
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
@@ -55,6 +55,30 @@ export async function launch({ width = 1440, height = 900, scale = 2 } = {}) {
     { stdio: 'ignore' },
   );
 
+  // The profile is ~60 MB of Chrome state per run. Remove it once Chrome has
+  // exited — deleting it under a live Chrome races its writes — and, as a
+  // backstop for a run that throws before close(), when this process exits.
+  const exited = new Promise((resolve) => {
+    proc.once('exit', resolve);
+    proc.once('error', resolve);
+  });
+  const removeProfile = () => rmSync(profile, { recursive: true, force: true, maxRetries: 3 });
+  const onExit = () => {
+    proc.kill('SIGKILL');
+    removeProfile();
+  };
+  process.once('exit', onExit);
+  const shutdown = async () => {
+    if (proc.exitCode === null && proc.signalCode === null) {
+      proc.kill('SIGTERM');
+      const timer = setTimeout(() => proc.kill('SIGKILL'), 5000);
+      await exited;
+      clearTimeout(timer);
+    }
+    process.off('exit', onExit);
+    removeProfile();
+  };
+
   let wsUrl = null;
   for (let i = 0; i < 100 && !wsUrl; i++) {
     await sleep(150);
@@ -67,6 +91,7 @@ export async function launch({ width = 1440, height = 900, scale = 2 } = {}) {
   }
   if (!wsUrl) {
     proc.kill('SIGKILL');
+    await shutdown();
     throw new Error('Chrome never exposed a debugging endpoint');
   }
 
@@ -168,7 +193,7 @@ export async function launch({ width = 1440, height = 900, scale = 2 } = {}) {
       } catch {
         /* already gone */
       }
-      proc.kill('SIGTERM');
+      await shutdown();
     },
   };
 }
