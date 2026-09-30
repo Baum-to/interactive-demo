@@ -284,6 +284,8 @@ The other pieces under `testbed/`:
 - `testbed/lib/` — the CDP client, a headless-browser helper and the terminal
   card renderer.
 - `testbed/shoot.mjs` — re-shoots `examples/self-demo` end to end. Needs Chrome.
+- `testbed/shoot-showcase.mjs` — re-shoots `examples/showcase` and, with
+  `INWORLD_API_KEY` set, its narration. Needs Chrome and ffmpeg.
 
 ## Checks a change has to pass
 

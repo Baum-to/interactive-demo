@@ -88,6 +88,18 @@ into `docs/images/demo.webp`, the editor clicked through its filmstrip into
 `docs/images/editor-anim.webp` (`--only demo` or `--only editor`, `--out <dir>`,
 `--frames <dir>` to keep the frames).
 
+## Re-shooting the showcase
+
+`examples/showcase` is a product tour of `testbed/app/` itself, the kind a
+customer would make. `node testbed/shoot-showcase.mjs` records it with the
+real `capture` (clicks, plus a scroll that becomes the video step), writes
+the screens and `metrics.json` into `examples/showcase/demos/acme-tour/`, and —
+only when `INWORLD_API_KEY` is set — regenerates the narration MP3s with
+Inworld TTS and rewrites those steps' `voiceover` and `captions`. `--out <dir>`
+writes somewhere else and leaves the config alone; `--no-voice` skips the
+narration. Needs Chrome and ffmpeg. Copy and hotspots are hand-written, as
+in the self-demo.
+
 ## The manual pass
 
 The automated run covers everything reachable over HTTP and the filesystem.
