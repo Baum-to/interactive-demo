@@ -153,7 +153,11 @@ Internal routes live under `/__demo/`. The editor is at `/__demo/editor/`.
 
 **3. The editor edits them in place.** The editor is a client of the dev
 server's JSON API under `/__demo/editor/demos/:slug/` — read the files, PUT a
-config, POST/DELETE an asset. There is no separate save step and no database:
+config, POST/DELETE an asset, GET the Share dialog's embed snippets. On load
+it also asks `GET /__demo/editor/capabilities` which optional features the
+host offers; `dev` answers `{}`, and a host that offers text-to-speech also
+serves `POST /__demo/editor/demos/:slug/voiceover`, which `dev` does not.
+There is no separate save step and no database:
 the PUT writes `demo.config.json` to disk, the watcher notices, the preview
 reloads.
 
@@ -167,7 +171,9 @@ rejects legacy `asset:` pointers. `--strict` makes warnings fail the run too;
 page with the config inlined, the player files copied out of the runtime
 package, and the demo's `assets/` alongside. Every URL inside is relative, so
 the folder works wherever it is served from. `embed.js` is written once at the
-output root.
+output root, next to a `.interactive-demo-build` marker: `build` empties its
+output first, and without `--force` only does that to an empty folder or
+one carrying the marker. It never builds into the project folder itself.
 
 **6. `publish` freezes a copy.** It hashes every file the config references,
 uploads each unique hash once, and rewrites the paths in a *copy* of the config
@@ -223,7 +229,8 @@ npm test        # vitest, all three packages
 ```
 
 `vitest.workspace.ts` points at each package's own `vitest.config.ts`. At the
-time of writing the suite is **55 files, 431 passing and 1 skipped**.
+time of writing the suite is **57 files, 470 passing and 1 skipped**; the
+count moves, and zero failures is the bar.
 
 - `packages/runtime/tests/` (31 files, jsdom) — the reducer and the engine,
   rendering, keyboard control, timing, themes, the schema, hotspot clamping, the
@@ -232,8 +239,9 @@ time of writing the suite is **55 files, 431 passing and 1 skipped**.
   scaffolding, validation, the rendered page, the media walker, the editor API,
   publish. These alias the runtime's **source**, so `npm test` does not need a
   built runtime.
-- `packages/editor/src/**/*.test.{ts,tsx}` (9 files, jsdom) — the config codec
-  round trip, the step factories, geometry, inspectors.
+- `packages/editor/src/**/*.test.{ts,tsx}` (11 files, jsdom) — the config codec
+  round trip, the step factories, step deletion, inspectors, the voiceover
+  panel, the editor shell and its API client, asset uploads.
 
 The editor's `codec.test.ts` pins the serializer against the real example
 configs: both must round-trip byte for byte. If you change how configs are
@@ -324,8 +332,9 @@ The two publish workflows, `.github/workflows/publish-runtime.yml` and
 `cli-v*`) or run by hand, never by a push to `main`. Each re-runs the full
 build/typecheck/lint/test bar, checks the tag version matches the package
 version, verifies the tarball actually contains its build output, and refuses to
-overwrite a version already on npm. Release order and the required secret are in
-[CONTRIBUTING.md](../CONTRIBUTING.md#releases).
+overwrite a version already on npm. They authenticate with npm trusted
+publishing (OIDC), so there is no publish secret. Release order and the
+one-time setup are in [CONTRIBUTING.md](../CONTRIBUTING.md#releases).
 
 ## Generated docs
 
