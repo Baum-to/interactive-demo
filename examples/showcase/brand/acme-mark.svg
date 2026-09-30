@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28" width="56" height="56" role="img" aria-label="Acme">
+  <title>Acme</title>
+  <rect width="28" height="28" rx="8" fill="#17151a"/>
+  <path fill="#fff" fill-rule="evenodd" d="M12.2 6.5h3.6l5.6 15h-3.3l-1.2-3.4h-5.8l-1.2 3.4H6.6zm-.1 9h3.8L14 10.1z"/>
+</svg>

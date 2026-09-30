@@ -23,11 +23,11 @@ jobs:
         run: |
           node scripts/docs-schema.mjs
           git diff --exit-code -- docs/schema.md
-      - name: Validate and build the example project
+      - name: Validate and build the showcase
         run: |
-          node ../../packages/cli/dist/cli.js validate
+          node ../../packages/cli/dist/cli.js validate --strict
           node ../../packages/cli/dist/cli.js build
-        working-directory: examples/getting-started
+        working-directory: examples/showcase
       - name: Validate and build the self-demo
         run: |
           node ../../packages/cli/dist/cli.js validate --strict

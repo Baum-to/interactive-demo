@@ -44,7 +44,7 @@ demo both ways and shows what comes back out of it.
 
 ```
 node packages/cli/dist/cli.js build          # inside any project
-node testbed/host/serve.mjs --dist examples/getting-started/dist --port 4321
+node testbed/host/serve.mjs --dist examples/showcase/dist --port 4321
 open http://localhost:4321/
 ```
 

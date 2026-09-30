@@ -25,7 +25,7 @@ Open-source interactive product demos: `packages/runtime` (React player + schema
 From the repo root: `npm run build`, `npm run typecheck`, `npm run lint` (0 errors; two known
 hook warnings in the runtime), `npm test` (57 files as of this line; the count moves — zero
 failures is the bar). CI also validates and builds
-`examples/getting-started` and `examples/self-demo` with the built CLI. A fresh-clone simulation (`git clone`, `npm ci`,
+`examples/showcase` and `examples/self-demo` with the built CLI. A fresh-clone simulation (`git clone`, `npm ci`,
 then the four commands) is the bar before calling anything done.
 
 ## Conventions worth knowing

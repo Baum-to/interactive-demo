@@ -6,7 +6,7 @@
 //   node testbed/host/serve.mjs [--dist <dir>] [--port 4321]
 //
 // <dir> is the output of `interactive-demo build` (the folder that holds one
-// subfolder per demo and embed.js). Defaults to examples/getting-started/dist.
+// subfolder per demo and embed.js). Defaults to examples/showcase/dist.
 import { createServer } from 'node:http';
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { extname, join, normalize, resolve, dirname } from 'node:path';
@@ -21,7 +21,7 @@ const flag = (name, fallback) => {
   return i === -1 ? fallback : argv[i + 1];
 };
 
-const distDir = resolve(repoRoot, flag('dist', 'examples/getting-started/dist'));
+const distDir = resolve(repoRoot, flag('dist', 'examples/showcase/dist'));
 const port = Number(flag('port', '4321'));
 
 if (!existsSync(distDir)) {

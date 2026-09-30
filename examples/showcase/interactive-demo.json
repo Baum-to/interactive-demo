@@ -1,0 +1,22 @@
+{
+  "name": "showcase",
+  "theme": "mono",
+  "tokens": {
+    "primary": "#17151a"
+  },
+  "demos": [
+    "acme-tour"
+  ],
+  "brand": {
+    "logo": "brand/acme-mark.svg",
+    "logoHref": "https://example.com",
+    "cta": {
+      "label": "Start free trial",
+      "href": "https://example.com"
+    },
+    "secondaryCta": {
+      "label": "View source",
+      "href": "https://github.com/inkly-ai/interactive-demo/tree/main/examples/showcase"
+    }
+  }
+}

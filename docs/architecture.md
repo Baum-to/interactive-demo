@@ -323,7 +323,7 @@ One workflow runs on every push to `main` and every pull request:
 2. `npm run build`, `npm run typecheck`, `npm run lint`, `npm test`
 3. **schema drift** — runs `node scripts/docs-schema.mjs` and then
    `git diff --exit-code -- docs/schema.md`. A diff fails the build.
-4. `validate` and `build` of `examples/getting-started` with the built CLI
+4. `validate --strict` and `build` of `examples/showcase` with the built CLI
 5. `validate --strict` and `build` of `examples/self-demo`
 6. the browser-free testbed phases
 

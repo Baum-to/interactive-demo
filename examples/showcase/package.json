@@ -1,5 +1,5 @@
 {
-  "name": "getting-started",
+  "name": "showcase",
   "private": true,
   "scripts": {
     "dev": "interactive-demo dev",

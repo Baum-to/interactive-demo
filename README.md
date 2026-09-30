@@ -38,6 +38,7 @@ It lives in <a href="examples/self-demo">examples/self-demo</a>, whose screens a
   before a click and that step is recorded as a short video instead.
 - **Narrate it.** Record a voiceover for any step in the editor, or attach an
   audio file; the step lasts at least as long as its narration.
+- **Every feature in one demo.** [examples/showcase](examples/showcase) is a product tour of a stand-in analytics app that uses all of it.
 
 ## Quickstart
 

@@ -120,7 +120,7 @@ function withAnnotation(
 
 /** The demo configs shipped in the repo, as bytes on disk. */
 const EXAMPLES = [
-    "../../../../../examples/getting-started/demos/tour/demo.config.json",
+    "../../../../../examples/showcase/demos/acme-tour/demo.config.json",
     "../../../../../examples/self-demo/demos/product-tour/demo.config.json",
 ] as const;
 
