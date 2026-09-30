@@ -26,7 +26,7 @@ import {
     type Message,
     type Step,
 } from "@inkly-org/interactive-demo";
-import { demoThemePresets } from "@inkly-org/interactive-demo/themes";
+import { resolveDemoTheme } from "@inkly-org/interactive-demo/themes";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -213,7 +213,6 @@ export function DemoSettingsInspector({
     background,
     backgroundColor,
     onBackgroundChange,
-    themeId,
     themePrimary,
     onThemePrimaryChange,
     brand,
@@ -231,8 +230,6 @@ export function DemoSettingsInspector({
     background: DemoBackground | undefined;
     backgroundColor: string | undefined;
     onBackgroundChange: (next: DemoBackground | undefined) => void;
-    /** Active theme preset id (resolved — never undefined). */
-    themeId: string;
     themePrimary: string | undefined;
     onThemePrimaryChange: (next: string | undefined) => void;
     brand: DemoBrand | undefined;
@@ -244,8 +241,7 @@ export function DemoSettingsInspector({
     uploadImage: MediaUploader;
 }) {
     const resolved = resolveChrome(chrome);
-    const themePreset = demoThemePresets.find((preset) => preset.id === themeId);
-    const themePrimaryFallback = themePreset?.theme.primary ?? "#5b3df5";
+    const themePrimaryFallback = resolveDemoTheme().tokens.primary ?? "#5b3df5";
     const setField = (patch: Partial<Required<Chrome>>) => {
         onChange({ ...resolved, ...patch });
     };
@@ -355,7 +351,6 @@ export function DemoSettingsInspector({
                     demoId={demoId}
                     assets={assets}
                     uploadImage={uploadImage}
-                    themeId={themeId}
                 />
             </div>
             <HeaderSection
@@ -497,7 +492,6 @@ function BackgroundPicker({
     demoId,
     assets,
     uploadImage,
-    themeId,
 }: {
     background: DemoBackground | undefined;
     backgroundColor: string | undefined;
@@ -505,7 +499,6 @@ function BackgroundPicker({
     demoId: string;
     assets: ReadonlyArray<AssetMeta>;
     uploadImage: MediaUploader;
-    themeId: string;
 }) {
     const hasOverride = Boolean(background || backgroundColor);
     const resolved = resolveDemoBackground({ background, backgroundColor });
@@ -601,7 +594,7 @@ function BackgroundPicker({
                                 Theme default
                             </span>
                             <span className="mt-0.5 block truncate text-[11.5px] text-[color:var(--ink-2)]">
-                                {themeId} demo background
+                                Default demo background
                             </span>
                         </span>
                     </div>

@@ -943,9 +943,6 @@ type StageProps = {
     onStepNameCommit: (value: string) => void;
     zoomMode: ZoomMode;
     setZoomMode: (mode: ZoomMode) => void;
-    /** Preset id used for `data-demo-theme` scoped CSS and preset tokens so
-     * the Editor paints the same chrome the player does. */
-    themeId?: string;
     resolveAssetUrl?: (uri: string) => string;
 };
 
@@ -1153,20 +1150,18 @@ export function Stage({
     stepCount,
     zoomMode,
     setZoomMode,
-    themeId,
     resolveAssetUrl,
 }: StageProps) {
     // The Editor renders `<Demo>` directly so it can pass drag/select
     // renderers. Use the shared theme resolver here too, matching the
     // preview and published runtime shells: inject resolved tokens into
-    // the config and inject the preset's scoped CSS alongside the player.
+    // the config and inject the theme's scoped CSS alongside the player.
     const resolvedTheme = useMemo(
         () =>
             resolveDemoTheme({
                 demoTheme: config.theme,
-                fallbackThemeId: themeId,
             }),
-        [config.theme, themeId],
+        [config.theme],
     );
     const renderedConfig = useMemo<DemoConfig>(() => {
         const cfg = injectResolvedThemeIntoConfig(config, resolvedTheme.tokens);
@@ -1317,7 +1312,6 @@ export function Stage({
                                     size="md"
                                     components={editorRenderers}
                                     layout={editorLayout}
-                                    themeId={resolvedTheme.themeId}
                                     resolveAssetUrl={resolveAssetUrl}
                                 />
                             </AnnotationEditModeContext.Provider>

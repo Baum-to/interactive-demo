@@ -52,7 +52,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import { demoThemePresetsById } from "@inkly-org/interactive-demo/themes";
+import { resolveDemoTheme } from "@inkly-org/interactive-demo/themes";
 import { CoverPreviewMini } from "@inkly-org/interactive-demo";
 import {
     backgroundKind,
@@ -61,6 +61,9 @@ import {
     firstContentfulImageSrc,
 } from "./geometry";
 import { type Slide } from "./context";
+
+/** Cover thumbnails paint with the theme's own tokens and CSS. */
+const THUMBNAIL_THEME = resolveDemoTheme();
 
 export type CoverVariant = "form" | "headline" | "embed" | "cta";
 
@@ -380,7 +383,6 @@ export function MessageCountIndicator({ count }: { count: number }) {
 export function SortableStepThumbnail({
     step,
     index,
-    themeId,
     glassImageSrc,
     selected,
     onClick,
@@ -391,7 +393,6 @@ export function SortableStepThumbnail({
 }: {
     step: Step;
     index: number;
-    themeId?: string;
     glassImageSrc?: string;
     selected: boolean;
     onClick: () => void;
@@ -416,15 +417,13 @@ export function SortableStepThumbnail({
         touchAction: "none",
         cursor: isDragging ? "grabbing" : "grab",
     };
-    const themePreset = themeId ? demoThemePresetsById[themeId] : undefined;
     const coverBody =
         step.kind === "cover" ? (
             <CoverPreviewMini
                 cover={step}
                 glassImageSrc={glassImageSrc}
-                themeId={themeId}
-                themeTokens={themePreset?.theme}
-                themeCss={themePreset?.css}
+                themeTokens={THUMBNAIL_THEME.tokens}
+                themeCss={THUMBNAIL_THEME.css}
             />
         ) : undefined;
     return (
@@ -496,7 +495,6 @@ function AddBookendButton({
 
 export function SlideStrip({
     config,
-    themeId,
     selectedSlide,
     onSelectSlide,
     onOpenStepSettings,
@@ -510,7 +508,6 @@ export function SlideStrip({
     canDeleteSteps,
 }: {
     config: DemoConfig;
-    themeId?: string;
     selectedSlide: Slide;
     onSelectSlide: (next: Slide) => void;
     /** Re-clicking the already-selected thumbnail opens the step
@@ -585,7 +582,6 @@ export function SlideStrip({
                                 <SortableStepThumbnail
                                     step={step}
                                     index={index + 1}
-                                    themeId={themeId}
                                     glassImageSrc={glassImageSrc}
                                     selected={isSelected}
                                     onClick={() => {

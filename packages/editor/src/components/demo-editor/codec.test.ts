@@ -141,6 +141,19 @@ describe("serializeDemoConfig", () => {
         expect(serializeDemoConfig(p.config, p)).toBe(AUTHORED);
     });
 
+    it("keeps a deprecated theme.preset through a load and an edit", () => {
+        // Presets are gone and the player ignores one, but the editor does
+        // not delete it behind the author's back: `validate` asks them to.
+        const src = AUTHORED.replace(
+            '"title": "A tour",',
+            '"title": "A tour",\n  "theme": {\n    "preset": "mono"\n  },',
+        );
+        const p = parsed(src);
+        expect(serializeDemoConfig(p.config, p)).toBe(src);
+        const edited = serializeDemoConfig({ ...p.config, title: "Retitled" }, p);
+        expect(edited).toBe(src.replace('"A tour"', '"Retitled"'));
+    });
+
     it("keeps $schema first and the authored key order", () => {
         const p = parsed();
         const next = { ...p.config, title: "A retitled tour" };

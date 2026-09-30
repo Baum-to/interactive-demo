@@ -954,8 +954,6 @@ function CoverFooter({
 
 // ─── main editor view ──────────────────────────────────────────────────────
 
-const DEFAULT_THEME_ID = "default";
-
 // ─── sidebar screen history ──────────────────────────────────────────────────
 
 type SidebarPanelKind = "demo" | "step" | "cover" | "voiceover" | null;
@@ -1506,7 +1504,6 @@ export function DemoEditorView({
     const { config } = parsed;
     const prefix = "";
     const renderConfig = displayConfig ?? config;
-    const themeId = config.theme?.preset ?? DEFAULT_THEME_ID;
     const themePrimary = config.theme?.tokens?.primary;
     const onChromeChange = (next: Chrome) => {
         writeConfig({ ...config, chrome: next }, prefix);
@@ -2056,7 +2053,6 @@ export function DemoEditorView({
                                 background={config.background}
                                 backgroundColor={config.backgroundColor}
                                 onBackgroundChange={onBackgroundChange}
-                                themeId={themeId}
                                 themePrimary={themePrimary}
                                 onThemePrimaryChange={onThemePrimaryChange}
                                 brand={config.theme?.brand}
@@ -2174,7 +2170,6 @@ export function DemoEditorView({
                         <div className="min-h-0 flex-1 overflow-y-auto px-3 py-3">
                             <AnnotationInspector
                                 annotation={selectedAnnotation}
-                                themeId={themeId}
                                 onChange={(patch) =>
                                     updateAnnotation(
                                         selectedStep.id,
@@ -2222,7 +2217,6 @@ export function DemoEditorView({
                                 demoId={demoId}
                                 imageAssets={imageAssets}
                                 uploadImage={uploadImageOnly}
-                                themeId={themeId}
                                 nameDraft={stepNameDraft}
                                 onNameDraftChange={setStepNameDraft}
                                 onNameCommit={commitStepName}
@@ -2235,7 +2229,6 @@ export function DemoEditorView({
                 ) : (
                     <SlideStrip
                         config={renderConfig}
-                        themeId={themeId}
                         selectedSlide={slide}
                         onSelectSlide={navigateTo}
                         onOpenStepSettings={openStepSettings}
@@ -2281,7 +2274,6 @@ export function DemoEditorView({
                                 onStepNameCommit={commitStepName}
                                 zoomMode={zoomMode}
                                 setZoomMode={setZoomMode}
-                                themeId={themeId}
                                 resolveAssetUrl={resolveAssetUri}
                             />
                         </div>

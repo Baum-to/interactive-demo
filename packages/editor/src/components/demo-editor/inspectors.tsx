@@ -155,29 +155,10 @@ export const COVER_BACKGROUND_MODES = [
 ] as const;
 type CoverBackgroundMode = (typeof COVER_BACKGROUND_MODES)[number];
 
-const CTA_THEME_DEFAULTS: Record<
-    string,
-    { background: string; textColor: string }
-> = {
-    default: { background: "#5B6CFF", textColor: "#FFFFFF" },
-    mono: { background: "#0A66FF", textColor: "#FFFFFF" },
-};
+/** The theme's CTA and hotspot colours, shown as the colour pickers' defaults. */
+const CTA_THEME_DEFAULTS = { background: "#5B6CFF", textColor: "#FFFFFF" };
 
-function ctaThemeDefaults(themeId?: string) {
-    return CTA_THEME_DEFAULTS[themeId ?? ""] ?? CTA_THEME_DEFAULTS["default"];
-}
-
-const HOTSPOT_THEME_DEFAULTS: Record<
-    string,
-    { background: string; textColor: string }
-> = {
-    default: { background: "#5B6CFF", textColor: "#FFFFFF" },
-    mono: { background: "#2563EB", textColor: "#FFFFFF" },
-};
-
-function hotspotThemeDefaults(themeId?: string) {
-    return HOTSPOT_THEME_DEFAULTS[themeId ?? ""] ?? HOTSPOT_THEME_DEFAULTS["default"];
-}
+const HOTSPOT_THEME_DEFAULTS = { background: "#5B6CFF", textColor: "#FFFFFF" };
 
 function ColorOverrideControl({
     value,
@@ -280,7 +261,6 @@ export function AnnotationInspector({
     annotation,
     onChange,
     onReplace,
-    themeId,
 }: {
     annotation: Annotation;
     onChange: (patch: Partial<Annotation>) => void;
@@ -288,11 +268,10 @@ export function AnnotationInspector({
      *  affect required/optional fields, the caller may need to swap the
      *  whole annotation rather than apply a flat patch). */
     onReplace: (next: Annotation) => void;
-    themeId?: string;
 }) {
     const update = onChange as (patch: Record<string, unknown>) => void;
     const isMessage = annotation.type === "message";
-    const messageThemeDefaults = hotspotThemeDefaults(themeId);
+    const messageThemeDefaults = HOTSPOT_THEME_DEFAULTS;
     const [behaviorOpen, setBehaviorOpen] = useState(false);
 
     return (
@@ -643,7 +622,6 @@ export function CoverInspector({
     demoId,
     imageAssets,
     uploadImage,
-    themeId,
     nameDraft,
     onNameDraftChange,
     onNameCommit,
@@ -667,7 +645,6 @@ export function CoverInspector({
         width: number;
         height: number;
     } | null>;
-    themeId?: string;
     nameDraft: string;
     onNameDraftChange: (next: string) => void;
     onNameCommit: (next: string) => void;
@@ -760,7 +737,6 @@ export function CoverInspector({
                         imageAssets={imageAssets}
                         uploadImage={uploadImage}
                         defaultHeadlineTextAlign="middle"
-                        themeId={themeId}
                     />
                 )}
             </div>
@@ -1235,7 +1211,6 @@ export function WidgetInspector({
     imageAssets,
     uploadImage,
     defaultHeadlineTextAlign,
-    themeId,
 }: {
     widget: Widget;
     onChange: (next: Widget) => void;
@@ -1252,7 +1227,6 @@ export function WidgetInspector({
         height: number;
     } | null>;
     defaultHeadlineTextAlign: MessageTextAlign;
-    themeId?: string;
 }) {
     return (
         <div>
@@ -1263,7 +1237,6 @@ export function WidgetInspector({
                     steps={steps}
                     coverStepId={coverStepId}
                     defaultTextAlign={defaultHeadlineTextAlign}
-                    themeId={themeId}
                     demoId={demoId}
                     imageAssets={imageAssets}
                     uploadImage={uploadImage}
@@ -1275,7 +1248,6 @@ export function WidgetInspector({
                     onChange={onChange}
                     steps={steps}
                     coverStepId={coverStepId}
-                    themeId={themeId}
                     demoId={demoId}
                     imageAssets={imageAssets}
                     uploadImage={uploadImage}
@@ -1524,7 +1496,6 @@ export function HeadlineWidgetFields({
     steps,
     coverStepId,
     defaultTextAlign,
-    themeId,
     demoId,
     imageAssets,
     uploadImage,
@@ -1534,7 +1505,6 @@ export function HeadlineWidgetFields({
     steps: ReadonlyArray<{ id: string; label: string }>;
     coverStepId: string;
     defaultTextAlign: MessageTextAlign;
-    themeId?: string;
     demoId: string;
     imageAssets: ReadonlyArray<AssetMeta>;
     uploadImage: (
@@ -1548,7 +1518,7 @@ export function HeadlineWidgetFields({
 }) {
     const set = (patch: Partial<HeadlineWidget>) =>
         onChange({ ...widget, ...patch });
-    const ctaDefaults = ctaThemeDefaults(themeId);
+    const ctaDefaults = CTA_THEME_DEFAULTS;
     const [logoPickerOpen, setLogoPickerOpen] = useState(false);
     const logoName = widget.logo
         ? assetNameForUrl(widget.logo.src, imageAssets, demoId)
@@ -2218,7 +2188,6 @@ export function FormWidgetFields({
     onChange,
     steps,
     coverStepId,
-    themeId,
     demoId,
     imageAssets,
     uploadImage,
@@ -2227,7 +2196,6 @@ export function FormWidgetFields({
     onChange: (next: FormWidget) => void;
     steps: ReadonlyArray<{ id: string; label: string }>;
     coverStepId: string;
-    themeId?: string;
     demoId: string;
     imageAssets: ReadonlyArray<AssetMeta>;
     uploadImage: (
@@ -2241,7 +2209,7 @@ export function FormWidgetFields({
 }) {
     const set = (patch: Partial<FormWidget>) =>
         onChange({ ...widget, ...patch });
-    const ctaDefaults = ctaThemeDefaults(themeId);
+    const ctaDefaults = CTA_THEME_DEFAULTS;
 
     const [logoPickerOpen, setLogoPickerOpen] = useState(false);
     const logoName = widget.logo
