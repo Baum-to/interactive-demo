@@ -1,76 +1,50 @@
 # @inkly-org/interactive-demo-cli
 
-Author, preview and build interactive product demos from the command line.
+Author, preview and ship interactive product demos from the command line.
 
 ```sh
 npx @inkly-org/interactive-demo-cli init my-demos
 cd my-demos && npm install
 npm run dev                     # local preview + editor at http://localhost:3000
-npm run build                   # static output under dist/
+npx interactive-demo publish    # a link you can share and embed
 ```
+
+Prefer to host it yourself? `npm run build` writes a static folder per demo
+under `dist/` for any static host. The embed snippets are the same either
+way; only the origin differs.
 
 ## Commands
 
 | command | what it does |
 |---|---|
 | `init <name> [--theme <preset>] [--no-starter-demo]` | scaffold a new project |
-| `init --demo <slug> [--from <dir>]` | add a demo to the current project (scaffold, or import a folder) |
-| `dev [<path>] [--port <n>]` | local preview server with live reload; also serves the editor API |
-| `validate [--json] [--strict]` | check the project file, every `demo.config.json` and asset reference |
-| `build [--out <dir>]` | write a self-contained static folder per demo |
+| `init --demo <slug> [--from <dir\|zip>]`, `init --from <dir\|zip>` | add a demo to the current project: scaffold one, or import a demo folder or a capture `.zip` (the slug defaults to the source name) |
+| `dev [<path>] [--port <n>]` | local preview server with live reload; also serves the editor and its API |
+| `validate [--json] [--strict]` | check the project file, every `demo.config.json` and every media path |
 | `capture start <url>` … `capture stop` | record a click-through of a live web app as a demo (see below) |
+| `login [--token <token>] [--local] [--status]`, `logout` | save or remove the hosting service credentials |
+| `publish [<path>\|--demo <slug>] [--new]`, `publish --list` | publish a demo and print its URL; list every demo's URL |
+| `embed [<path>\|--demo <slug>] [--mode inline\|popup]` | print the embed snippet for a published demo (publishes it first if it never was) |
+| `build [--out <dir>] [--force]` | write a self-contained static folder per demo |
 | `version`, `help [command]` | |
 
 `dev` also accepts a bare demo folder (one containing `demo.config.json`) and
-serves it in place.
+serves it in place. [docs/cli.md](../../docs/cli.md) has every flag.
 
 ## Project layout
 
 ```
 my-demos/
-  interactive-demo.json          name, optional theme/tokens, optional demo order
+  interactive-demo.json          name, optional theme/tokens/brand, optional demo order
   demos/
     <slug>/
       demo.config.json           the demo: steps, hotspots, captions, chapters
-      assets.json                manifest of the demo's assets (id → file)
       assets/                    screenshots, recordings, audio
 ```
 
-Demo configs reference assets as `asset:<id>`; the manifest maps each id to a
-file under `assets/`.
-
-## Page contract
-
-Every demo page, in `dev` and in `build` output, is:
-
-```html
-<link rel="stylesheet" href="./player.css">
-<link rel="stylesheet" href="./player-fonts.css">   <!-- optional: self-hosted fonts, with fonts/*.woff2 next to it -->
-<script id="demo-config" type="application/json">…demo config…</script>
-<script id="demo-assets" type="application/json">…assets manifest array…</script>
-<div id="root"></div>
-<script src="./player.js"></script>
-```
-
-`player.js` and `player.css` come from `@inkly-org/interactive-demo`. The
-player resolves `asset:<id>` to the manifest entry's `publicUrl` (absolute
-URLs are used as-is; local files become `./assets/<file>` next to the page).
-
-## Static output
-
-```
-dist/<slug>/
-  index.html
-  player.js
-  player.css
-  assets/…
-```
-
-Deploy the folder as static files and embed a demo with an iframe:
-
-```html
-<iframe src="https://your-site/demos/<slug>/" width="960" height="600" allow="fullscreen"></iframe>
-```
+A demo config references its media by path relative to the demo folder
+(`assets/screen-001.png`). There is no manifest: the file on disk and the path
+in the config are the whole story.
 
 ## Capture
 
@@ -86,7 +60,8 @@ npx interactive-demo capture stop
 npx interactive-demo dev
 ```
 
-`stop` writes the demo into the current project at `demos/<slug>/` (or into
+`stop` writes the demo into the current project at `demos/<slug>/` and adds
+the slug to the project's `demos` list when it keeps one (or writes into
 `--out <dir>` when you are not inside a project). `status` shows the steps
 recorded so far, `undo` drops the last one, `cancel` throws the session away.
 
@@ -107,42 +82,97 @@ npx interactive-demo capture login https://app.example.com/login      # opens a 
 npx interactive-demo capture start https://app.example.com --profile app-example-com
 ```
 
+Without `--profile`, `capture login` names the profile after the URL's host
+(`app.example.com` becomes `app-example-com`).
+
 Profiles live under `~/.interactive-demo/capture/profiles/` (override the whole
 capture home with `INTERACTIVE_DEMO_CAPTURE_HOME`). `capture profiles` lists them.
 Nothing is uploaded anywhere: sessions, frames and profiles stay on your machine.
 
 ## Publish
 
-`build` is the default path: you host the static folder yourself. `publish`
-is the hosted option — it uploads a demo to the hosting service and gives you
-a URL you can embed straight away.
+`publish` is the short path to a link: it puts a demo on the hosting service
+and prints a URL you can send or embed straight away. Nothing to deploy.
 
 ```sh
 npx interactive-demo login                 # opens the browser once; token saved to ~/.interactive-demo/credentials.json
 npx interactive-demo publish               # the project's only demo, or …
 npx interactive-demo publish demos/intro   # … one by path or --demo <slug>
-npx interactive-demo publish --list        # hosted URL of every demo
+npx interactive-demo publish --list        # every demo, with its URL or "(not published)"
+npx interactive-demo embed --mode popup    # snippets for the published demo
 npx interactive-demo logout
 ```
 
 - A demo is keyed by the `id` in its `demo.config.json`. Publishing again
   updates the same hosted URL in place, so embeds keep working; `--new`
   mints a fresh URL instead.
-- Assets are uploaded first (each unique file once, through presigned
-  uploads), then the config is frozen as a deployment at `/p/<id>`.
+- The media the config references is uploaded first, each unique file once,
+  then a frozen copy of the config is published at `/p/<id>`. The paths in
+  your `demo.config.json` stay relative.
 - `login --token <token>` or `INTERACTIVE_DEMO_API_TOKEN` skips the browser.
   `INTERACTIVE_DEMO_API_BASE` points the CLI at another origin (for example a
   local build of the hosting service; `login --local` is shorthand for
-  `http://localhost:3000`).
+  `http://localhost:3000`). `login --status` shows the credentials path, the
+  origin and whether the token still works.
 - The credentials file belongs to this CLI only and is written owner-only.
+
+## Host it yourself
+
+`build` writes one self-contained folder per demo. Nothing in it depends on
+where it is served from.
+
+```
+dist/<slug>/
+  index.html
+  player.js
+  player.css
+  player-fonts.css               plus fonts/ and backgrounds/
+  assets/…
+  brand/…                        the project logo, when brand.logo is a project file
+dist/embed.js                    the pop-up loader, once for the whole folder
+```
+
+Deploy the folder as static files and embed a demo with an iframe:
+
+```html
+<iframe src="https://your-site/demos/<slug>/?embed=inline" loading="lazy" allow="fullscreen"
+        style="border:0; width:100%; height:min(900px, 80vh)"></iframe>
+```
+
+`?embed=inline` renders the player alone, without the page bar and canvas.
+`build` prints the full snippets for you — this iframe sized to the demo, and
+a pop-up button — from the same code as `embed` and `publish`. See [docs/embedding.md](../../docs/embedding.md).
+
+`build` empties its output folder first, so it only does that to a folder it
+created (it leaves a `.interactive-demo-build` marker) or an empty one. It
+refuses any other non-empty folder unless you pass `--force`, and always
+refuses the project folder itself.
+
+### Page contract
+
+Every demo page, in `dev` and in `build` output, is:
+
+```html
+<link rel="stylesheet" href="./player.css">
+<link rel="stylesheet" href="./player-fonts.css">   <!-- optional: self-hosted fonts, with fonts/*.woff2 next to it -->
+<script id="demo-config" type="application/json">…demo config…</script>
+<div id="root"></div>
+<script src="./player.js"></script>
+```
+
+`player.js` and `player.css` come from `@inkly-org/interactive-demo`. Media
+paths in the config stay relative, so the browser resolves them against the
+page, which sits in the demo folder next to `assets/`. Absolute URLs are used
+as-is.
 
 ## Dev server routes
 
 - `/` — a list of the project's demos
-- `/<slug>/` — the demo page; `/<slug>/player.js`, `/<slug>/player.css`, `/<slug>/assets/<file>`
+- `/<slug>/` — the demo page; next to it `player.js`, `player.css`, `player-fonts.css`, `fonts/`, `backgrounds/`, `brand/` and `assets/<file>`, laid out as `build` writes them
+- `/__demo/player.js`, `/__demo/player.css`, `/__demo/player-fonts.css`, `/__demo/fonts/`, `/__demo/backgrounds/` — the same player files at a fixed path, for the editor
 - `/__demo/editor/` — the editor; open a demo at `/__demo/editor/#/<slug>` (the `/` list links to it)
 - `/__demo/demos`, `/__demo/demo/<slug>` — JSON used by the editor
-- `/__demo/editor/demos/<slug>/files` (GET, PUT) and `/__demo/editor/demos/<slug>/assets?name=<file>` (POST) — the editor's read/write API
+- `/__demo/editor/demos/<slug>/files` (GET, PUT), `/__demo/editor/demos/<slug>/assets` (GET, and POST or DELETE with `?name=<file>`), `/__demo/editor/demos/<slug>/embed` (GET, the Share dialog's snippets) — the editor's read/write API
 - `/__demo/editor/capabilities` (GET) — optional host features for the editor; `dev` offers none and answers `{}`
 
 The `__demo` slug is reserved for these routes.
