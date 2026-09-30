@@ -51,7 +51,7 @@ npx interactive-demo login && npx interactive-demo publish
 
 | Command | What it does |
 |---|---|
-| `interactive-demo init <name> [--theme default\|mono] [--no-starter-demo]` | Scaffold a project. |
+| `interactive-demo init <name> [--no-starter-demo]` | Scaffold a project. |
 | `interactive-demo init [--demo <slug>] --from <dir\|zip>` | Import an existing demo folder, or a `.zip` of one, into the project you are in. `--demo` is optional; the slug defaults to the source name. |
 | `interactive-demo init --demo <slug>` | Add a starter demo to the project you are in. |
 | `interactive-demo dev [<path>] [--port <n>]` | Local preview server (default port 3000). Also serves a browser editor at `/__demo/editor/`. |
@@ -114,6 +114,10 @@ capture gives you structure, not writing.
 - **Chapters** group steps. The default player shows no chapter menu; they
   are targets for a `chapter` button action and for a custom layout.
 - **The cover** is the first thing anyone sees; give it a real headline.
+- **The look** is one theme. Change it with `theme.tokens` (`primary`,
+  `secondary`, `font`, `radius`), or `tokens` in `interactive-demo.json` for
+  every demo. There are no presets: delete a `theme.preset` or a project
+  `theme` if `validate` warns about one.
 - Run `interactive-demo validate` after editing. It catches a bad path or a
   broken reference before a viewer does.
 

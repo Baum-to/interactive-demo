@@ -43,14 +43,13 @@ on `PATH` for video steps.
 Scaffolds a new project, or adds a demo to one you already have.
 
 ```sh
-interactive-demo init <name> [--theme <preset>] [--no-starter-demo]
+interactive-demo init <name> [--no-starter-demo]
 interactive-demo init --demo <slug> [--from <dir|zip>]
 interactive-demo init --from <dir|zip>
 ```
 
 | Flag | Default | What it does |
 |---|---|---|
-| `--theme <preset>` | `default` | Theme preset id written to `interactive-demo.json`. `default` and `mono` ship. |
 | `--no-starter-demo` | off | Scaffold an empty project with no `getting-started` demo. |
 | `--demo <slug>` | — | Inside an existing project: add `demos/<slug>/`. Optional when `--from` is given. |
 | `--from <dir\|zip>` | — | Import an existing demo folder, or a `.zip` of one, instead of scaffolding. |
@@ -64,7 +63,8 @@ menu each piece comes from: an intro cover, then three content steps — a
 recorded click, a callout beside an area, and a zoom with a blur and a text
 label — and an outro cover that points at `capture`. The generated
 `README.md` covers capturing a real demo, publishing it and hosting it
-yourself. It prints the next steps.
+yourself. It prints the next steps. There is one theme, so there is no
+`--theme` flag; an old `--theme` is ignored with a warning.
 
 `init --demo <slug>` writes `demos/<slug>/demo.config.json` and
 `demos/<slug>/assets/placeholder.png`, mints the demo's permanent id and
@@ -86,7 +86,7 @@ becomes `demos/onboarding/`. That name has to be a valid kebab-case slug;
 if it isn't (`Onboarding Flow.zip`), pass `--demo` to choose one.
 
 ```sh
-interactive-demo init acme-demos --theme mono
+interactive-demo init acme-demos
 cd acme-demos
 interactive-demo init --demo billing
 interactive-demo init --demo onboarding --from ~/captures/onboarding
@@ -311,7 +311,6 @@ warnings.
 
 Errors:
 
-- An unknown theme preset, in the project file or in a demo.
 - A `brand.logo` that doesn't exist, or that escapes the project root.
 - A demo folder whose slug is invalid or reserved.
 - A media path with no file behind it, or one that escapes the demo folder.
@@ -325,6 +324,8 @@ Warnings:
 - Two demos sharing one id, usually a hand-copied folder. Run `dev` to
   re-mint.
 - The project's `demos` list naming a demo that isn't there.
+- A theme preset: `theme` in the project file or `theme.preset` in a demo.
+  Presets were removed and both are ignored; delete them.
 
 ## build
 

@@ -126,8 +126,10 @@ still references it.
 
 What the editor leaves to the file: chapters; captions (apart from the ones
 Generate writes); a step's `duration` and `advance.trigger`;
-`chrome.autoplay`; `aspectRatio`; the theme preset and the `secondary`,
-`font` and `radius` tokens; and `custom` widgets. Deleting a step still
+`chrome.autoplay`; `aspectRatio`; the `secondary`, `font` and `radius`
+tokens; and `custom` widgets. There is one theme and no theme picker; a
+leftover `theme.preset` is kept as written when you save (`validate` asks
+you to delete it). Deleting a step still
 keeps chapters honest — the step id is removed from every chapter, a
 chapter left empty is dropped, and any button that pointed at the deleted
 step or chapter is retargeted.

@@ -4,7 +4,7 @@
 
 ```
 my-demos/
-  interactive-demo.json        { "name", "theme"?, "tokens"?, "brand"?, "demos"? }
+  interactive-demo.json        { "name", "tokens"?, "brand"?, "demos"? }
   package.json                 scripts: dev, validate, build
   demos/
     onboarding/
@@ -16,15 +16,30 @@ my-demos/
 
 `interactive-demo.json` needs only a `name`. `demos` is an optional list
 that fixes the order `dev` lists demos in; demos are discovered by walking
-`demos/`, so a folder is enough. `theme` names the preset (`default` or `mono`
-ships) and `tokens` overrides its colours, font and radius for every demo.
-The default preset paints its watercolor behind cover steps; give a cover its
-own `background` to replace it.
-`brand` fills the page header (below).
+`demos/`, so a folder is enough. `tokens` sets the theme's colours, font and
+radius for every demo (below). `brand` fills the page header (below).
 
 Add a demo with `interactive-demo init --demo <slug>`, import a folder or a
 capture zip with `--from <dir|zip>`, or record one with `capture` (below). The editor at
 `/__demo/editor/#/<slug>` edits `demo.config.json` in place.
+
+### Theme
+
+There is one theme: an indigo accent, a dotted canvas, a macOS-style frame,
+and a watercolor behind cover steps (give a cover its own `background` to
+replace it). Customise it with four tokens, project-wide in the project
+file's `tokens` or per demo in `theme.tokens`; the demo's win.
+
+| token | default | sets |
+|---|---|---|
+| `primary` | `#5b6cff` | the accent: buttons, hotspots, the page-bar CTAs |
+| `secondary` | `#ebebeb` | secondary surfaces and borders |
+| `font` | `Inter, ui-sans-serif, system-ui, …` | the UI font stack |
+| `radius` | `10px` | corner radius |
+
+Theme presets were removed. A demo's `theme.preset` and the project file's
+`theme` still load and are ignored; `validate` warns about them, so
+`validate --strict` fails until you delete them.
 
 ### Brand and the page header
 
@@ -57,7 +72,7 @@ an absolute URL for a logo that should appear there. Leave `name` out when the
 logo image already carries the wordmark. `logoHref` turns the mark into a
 link opening in a new tab; without it the mark links to `/`. CTA and
 `logoHref` URLs must be `http(s)` or `mailto`. The buttons take their colour
-from the theme preset and the `primary` token.
+from the theme and the `primary` token.
 
 This project `brand` is the page bar around the player. A demo can also
 carry its own `theme.brand` (`logo`, `name`, `logoHref`) for the header
@@ -76,7 +91,7 @@ The full field list is in [schema.md](schema.md). The shape:
   "version": 1,
   "title": "Onboarding",
   "subtitle": "From sign-up to first project",
-  "theme": { "preset": "default", "tokens": { "primary": "#5b6cff" } },
+  "theme": { "tokens": { "primary": "#5b6cff" } },
   "chrome": { "controls": "full", "autoplay": false, "branding": true },
   "chapters": [{ "id": "setup", "title": "Setup", "stepIds": ["s1", "s2"] }],
   "steps": [ … ]

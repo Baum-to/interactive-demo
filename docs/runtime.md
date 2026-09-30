@@ -25,7 +25,7 @@ dependency — the package validates every config it renders.
 |---|---|
 | `@inkly-org/interactive-demo` | `Demo`, `DemoModal`, the primitives, the engine hooks, the schema re-exported |
 | `@inkly-org/interactive-demo/schema` | `DemoSchema`, `parseDemo`, every sub-schema and its inferred type, `DEMO_CONFIG_SCHEMA_URL` |
-| `@inkly-org/interactive-demo/themes` | `demoThemePresets`, `demoThemePresetsById`, `resolveDemoTheme`, `DEFAULT_DEMO_THEME_ID` |
+| `@inkly-org/interactive-demo/themes` | `resolveDemoTheme`, `demoThemeDefaultTokens`, `DEFAULT_DEMO_THEME_ID` |
 | `@inkly-org/interactive-demo/styles.css` | the player stylesheet. Required — the components ship no inline styles |
 | `@inkly-org/interactive-demo/fonts.css` | optional `@font-face` rules and the default theme's cover backdrop |
 | `@inkly-org/interactive-demo/player.js` | the standalone bundle for a static page |
@@ -74,8 +74,8 @@ player, and the parse errors sit on the player context as `errors`.
 | `resolveAssetUrl` | `(path: string) => string` | Your own rule for turning a relative path into a URL. Wins over `baseUrl`. |
 | `onEvent` | `(event: DemoEvent) => void` | The runtime event stream (below). |
 | `onReady` | `({ demo, controls }) => void` | Fires once after the config parses and the player mounts. `controls` is stable, so you can keep it. |
-| `themeId` | `string` | Which preset's tokens to start from, and the value of `data-demo-theme` on the root. Defaults to `config.theme.preset`. |
-| `themeTokens` | `Partial<ThemeTokens>` | Host-level token overrides, applied over the preset and under the demo's own tokens. |
+| `themeId` | `string` | Deprecated and ignored: there is one theme, and the root's `data-demo-theme` is always `default`. |
+| `themeTokens` | `Partial<ThemeTokens>` | Host-level token overrides, applied over the theme's defaults and under the demo's own tokens. |
 | `size` | `'sm' \| 'md' \| 'lg'` | Player size class. Default `'md'`. |
 | `controls` | `'auto' \| 'always'` | `'auto'` (default) fades the controls bar in on hover or focus; `'always'` keeps it up. |
 | `layout` | `'default' \| (props) => ReactNode` | The player composition. Pass a function to build your own out of the primitives. |
@@ -280,7 +280,7 @@ Two query parameters are read from the page URL:
   is no separate render layout behind it.
 
 The player also applies the demo-level canvas background (`background` or
-`backgroundColor` in the config) to `#root`, and injects the active theme's
+`backgroundColor` in the config) to `#root`, and injects the theme's
 scoped CSS into `<head>`.
 
 ### `window.__demo`
@@ -333,13 +333,20 @@ loader.
 
 ## Themes and fonts
 
-A theme is four tokens — `primary`, `secondary`, `font`, `radius` — plus
-optional CSS scoped to `[data-demo-theme="<id>"]`. Two presets ship:
-`default` and `mono`.
+There is one theme: four tokens plus CSS scoped to
+`[data-demo-theme="default"]`, which the root always carries. The tokens
+are what you customise:
 
-The tokens cascade, each layer winning over the one before it:
+| token | default |
+|---|---|
+| `primary` | `#5b6cff` |
+| `secondary` | `#ebebeb` |
+| `font` | `Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif` |
+| `radius` | `10px` |
 
-1. the preset named by `themeId`, or by `config.theme.preset`;
+They cascade, each layer winning over the one before it:
+
+1. the theme's defaults (`demoThemeDefaultTokens`);
 2. the `themeTokens` prop;
 3. `config.theme.tokens`.
 
@@ -347,17 +354,22 @@ The result lands on the root element as `--demo-primary`,
 `--demo-secondary`, `--demo-font` and `--demo-radius`, with
 `--demo-primary-fg` computed for readable text on the primary colour.
 Everything else is a CSS-level default in `styles.css`, so host CSS can
-override it, scoped to `[data-demo-theme="mono"]` if you want one theme
-only.
+override it.
 
-A preset's scoped CSS is a separate string. `player.js` injects it for you
-on a static page. A React host that selects a preset injects it itself:
+The theme's CSS is a separate string. `player.js` injects it for you on a
+static page. A React host injects it itself, once:
 
 ```ts
 import { resolveDemoTheme } from '@inkly-org/interactive-demo/themes';
 
-const { themeId, css } = resolveDemoTheme({ demoTheme: { preset: 'mono' } });
+const { css } = resolveDemoTheme(); // put it in a <style> tag
 ```
+
+Theme presets were removed. `config.theme.preset` and the `themeId` prop are
+still accepted and ignored (both `@deprecated` in the types), and so is a
+`preset` or host `theme` passed to `resolveDemoTheme`. `demoThemePresets`,
+`demoThemePresetsById` and the `DemoThemePreset` type are gone; use
+`resolveDemoTheme()` or `demoThemeDefaultTokens`.
 
 ### Fonts
 

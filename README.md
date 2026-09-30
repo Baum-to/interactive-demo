@@ -161,7 +161,7 @@ folder.
 | [Capturing](docs/capture.md) | the record-and-click loop, video steps, recovering a session |
 | [The editor](docs/editor.md) | what you can change, autosave, how edits land in your files |
 | [CLI reference](docs/cli.md) | every command, flag and default |
-| [Runtime / React API](docs/runtime.md) | `<Demo>`, the page contract, events, themes |
+| [Runtime / React API](docs/runtime.md) | `<Demo>`, the page contract, events, the theme |
 | [`demo.config.json`](docs/schema.md) | every field, generated from the schema |
 | [Sharing and embedding](docs/embedding.md) | link, iframe, pop-up or React — and who hosts it |
 | [Architecture](docs/architecture.md) | how the packages fit together, the build graph, CI |

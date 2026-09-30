@@ -24,7 +24,8 @@ a demo *is* lives here, so it can never disagree with itself.
 - `src/ui/` — `Demo` (the component hosts render), `DemoModal` (the React
   pop-up), `CoverPreviewMini` (the thumbnail the editor's slide strip uses).
 - `src/annotations/`, `src/primitives/`, `src/theme/`, `src/themes/` — hotspots,
-  shared pieces, the stylesheet and design tokens, the theme presets.
+  shared pieces, the stylesheet and design tokens, the theme (its token
+  defaults and CSS).
 - `src/player-entry.tsx` — the entry point for `player.js`, the standalone
   bundle with React compiled in that a built static page loads.
 - `src/embed/` — the pop-up loader that becomes `dist/embed.js`, a 3 KB IIFE
@@ -163,9 +164,9 @@ reloads.
 
 **4. `validate` checks them.** Parses every config against `DemoSchema`, checks
 that each referenced media path has a file behind it and stays inside the demo
-folder, checks slugs and theme presets, flags two demos sharing one `id`, and
-rejects legacy `asset:` pointers. `--strict` makes warnings fail the run too;
-`--json` prints the issue list.
+folder, checks slugs, warns about leftover theme presets, flags two demos
+sharing one `id`, and rejects legacy `asset:` pointers. `--strict` makes
+warnings fail the run too; `--json` prints the issue list.
 
 **5. `build` emits a self-contained folder.** One `dist/<slug>/` per demo: the
 page with the config inlined, the player files copied out of the runtime
