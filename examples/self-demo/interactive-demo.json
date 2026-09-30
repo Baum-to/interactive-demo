@@ -1,6 +1,5 @@
 {
   "name": "self-demo",
-  "theme": "default",
   "demos": [
     "product-tour"
   ],

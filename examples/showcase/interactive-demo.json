@@ -1,6 +1,5 @@
 {
   "name": "showcase",
-  "theme": "default",
   "demos": [
     "acme-tour"
   ],
