@@ -271,6 +271,7 @@ try {
   })()`);
   if (share) {
     await browser.click(share.cx, share.cy, 2000);
+    await record(browser, 'shareLink', '[role="dialog"] input[placeholder^="https://your-host"]');
     await snap(browser, '04-share');
     await browser.key('Escape', 'Escape', 27);
   } else {

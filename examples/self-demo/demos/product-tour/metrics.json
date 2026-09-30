@@ -1,5 +1,5 @@
 {
-  "takenAt": "2026-09-14T06:27:50.315Z",
+  "takenAt": "2026-09-30T07:35:53.252Z",
   "viewport": {
     "width": 1440,
     "height": 900
@@ -8,32 +8,32 @@
     "02-player.webp": {
       "width": 2880,
       "height": 1800,
-      "bytes": 76072
+      "bytes": 74106
     },
     "03-editor.webp": {
       "width": 2880,
       "height": 1800,
-      "bytes": 122078
+      "bytes": 118948
     },
     "04-share.webp": {
       "width": 2880,
       "height": 1800,
-      "bytes": 63384
+      "bytes": 66782
     },
     "06-embed-inline.webp": {
       "width": 2880,
       "height": 1800,
-      "bytes": 76756
+      "bytes": 73982
     },
     "07-embed-popup.webp": {
       "width": 2880,
       "height": 1800,
-      "bytes": 68558
+      "bytes": 65798
     },
     "01-capture.webp": {
       "width": 2880,
       "height": 1800,
-      "bytes": 71686
+      "bytes": 71794
     },
     "05-build.webp": {
       "width": 2880,
@@ -42,6 +42,12 @@
     }
   },
   "anchors": {
+    "shareLink": {
+      "x": 0.5517,
+      "y": 0.6288,
+      "w": 597,
+      "h": 33
+    },
     "hostInline": {
       "x": 0.5,
       "y": 0.4897,

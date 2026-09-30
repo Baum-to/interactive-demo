@@ -193,8 +193,8 @@
           "variant": "pointer",
           "anchor": "bottom",
           "x": 0.47,
-          "y": 0.606,
-          "text": "Paste your published link here and the Inline, Popup and React panes fill their snippets in with it."
+          "y": 0.629,
+          "text": "Paste your published link here and the Inline, Pop-up and Component panes fill their snippets in with it."
         }
       ]
     },
@@ -219,8 +219,8 @@
           "type": "message",
           "variant": "pointer",
           "anchor": "right",
-          "x": 0.33,
-          "y": 0.47,
+          "x": 0.65,
+          "y": 0.552,
           "text": "One self-contained folder per demo — or one command to a hosted link."
         }
       ]
