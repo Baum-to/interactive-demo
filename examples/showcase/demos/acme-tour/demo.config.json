@@ -4,16 +4,7 @@
   "version": 1,
   "title": "Acme Analytics in a minute",
   "subtitle": "Find the drop-off, save the audience, bring the team in.",
-  "background": {
-    "type": "color",
-    "from": "#f6f6f4",
-    "to": "#d9d7d2"
-  },
   "theme": {
-    "preset": "mono",
-    "tokens": {
-      "primary": "#17151a"
-    },
     "brand": {
       "name": "Acme Analytics",
       "logoHref": "https://example.com"
@@ -78,9 +69,7 @@
               "type": "chapter",
               "chapterId": "share"
             },
-            "animation": "none",
-            "background": "#efeeec",
-            "textColor": "#17151a"
+            "animation": "none"
           },
           "image": {
             "src": "assets/02-funnel.webp",
@@ -414,27 +403,21 @@
           "type": "headline",
           "id": "headline-outro",
           "title": "That's Acme in a minute",
-          "titleColor": "#ffffff",
           "description": "This tour was recorded from the product with interactive-demo, written up in its editor and shipped as a static folder. Make one for yours.",
-          "descriptionColor": "#b6b3ad",
           "cta": {
             "label": "Make a tour like this",
             "action": {
               "type": "url",
               "href": "https://github.com/inkly-ai/interactive-demo"
             },
-            "animation": "shimmer",
-            "background": "#ffffff",
-            "textColor": "#17151a"
+            "animation": "shimmer"
           },
           "secondaryCta": {
             "label": "Watch again",
             "action": {
               "type": "restart"
             },
-            "animation": "none",
-            "background": "#2b292e",
-            "textColor": "#ffffff"
+            "animation": "none"
           },
           "image": {
             "src": "assets/04-segments.webp",
@@ -446,10 +429,6 @@
           }
         }
       ],
-      "background": {
-        "type": "color",
-        "color": "#17151a"
-      },
       "advance": {
         "trigger": "click"
       }

@@ -25,16 +25,15 @@ then a form to book a walkthrough and a closing call to action.
 | `settings` | seats, roles and sources | `callout` message |
 | `invite` | sending the invite | `cursor` message; `voiceover` + `captions` |
 | `cover-form` | "Want a walkthrough on your own data?" | cover with a `form` widget: two required text fields and a `dropdown`, submit action `next` |
-| `cover-outro` | "That's Acme in a minute" | cover `background` colour, `titleColor`/`descriptionColor`, button colours; a primary `url` button and a secondary `restart` |
+| `cover-outro` | "That's Acme in a minute" | headline with a hero image; a primary `url` button and a secondary `restart` |
 
 Around the steps:
 
 - **Chapters** — *See what's happening*, *Act on it*, *Bring the team in*.
   The intro's secondary button jumps to the last one.
-- **Theme** — the `mono` preset with Acme's near-black as the `primary`
-  token (project-wide in `interactive-demo.json`, and again on the demo), a
-  gradient canvas `background` behind the player, and `theme.brand` naming
-  the demo in the player header.
+- **Theme** — the player's default theme, untouched, with `theme.brand`
+  naming the demo in the player header. The monochrome is the product's
+  own: Acme's screens, not the player.
 - **Page bar** — the project `brand` in `interactive-demo.json`: the Acme
   mark from `brand/`, a primary and a secondary CTA.
 - **Chrome** — `autoplay: true` so narration starts as each narrated step

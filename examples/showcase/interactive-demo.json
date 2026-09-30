@@ -1,9 +1,6 @@
 {
   "name": "showcase",
-  "theme": "mono",
-  "tokens": {
-    "primary": "#17151a"
-  },
+  "theme": "default",
   "demos": [
     "acme-tour"
   ],
