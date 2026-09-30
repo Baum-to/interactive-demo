@@ -9,7 +9,11 @@ const api = vi.hoisted(() => ({
     getHostCapabilities: vi.fn(async () => ({})),
 }));
 const toast = vi.hoisted(() => ({ error: vi.fn() }));
-vi.mock("@/api", () => api);
+// Network calls are stubs; pure helpers (resolveHostHref) stay real.
+vi.mock("@/api", async (importOriginal) => ({
+    ...(await importOriginal<typeof import("@/api")>()),
+    ...api,
+}));
 vi.mock("sonner", () => ({ toast }));
 // The real editor view needs a parsed demo and a stage; the shell's saving
 // logic only needs something that reports a change. The button's `data-p`
@@ -230,6 +234,45 @@ describe("EditorShell header", () => {
         expect(open.getAttribute("href")).toBe("/onboarding/");
         expect(open.className).toContain("btn-3d-secondary");
         expect(screen.getByText("Share").closest("button")!.className).toContain("btn-3d-primary");
+    });
+
+    it("goes back to the CLI's demo index by default, and opens the CLI's demo page", async () => {
+        render(<EditorShell slug="onboarding" />);
+        await act(flushMicrotasks);
+        const back = screen.getByLabelText("Back");
+        expect(back.getAttribute("href")).toBe("/");
+        expect(screen.getByText("Open demo").closest("a")!.getAttribute("href")).toBe("/onboarding/");
+    });
+
+    it("follows the host's links when it names them", async () => {
+        api.getHostCapabilities.mockResolvedValueOnce({
+            links: {
+                back: { href: "/demos/{slug}", label: "Back to demo" },
+                demo: { href: "/demos/{slug}" },
+            },
+        } as never);
+        render(<EditorShell slug="onboarding" />);
+        await act(flushMicrotasks);
+        expect(screen.getByLabelText("Back to demo").getAttribute("href")).toBe("/demos/onboarding");
+        expect(screen.getByText("Open demo").closest("a")!.getAttribute("href")).toBe("/demos/onboarding");
+    });
+
+    it("returns to the page it was opened from when that page is on this host", async () => {
+        const back = vi.spyOn(window.history, "back").mockImplementation(() => {});
+        vi.spyOn(window.history, "length", "get").mockReturnValue(2);
+        const referrer = vi
+            .spyOn(document, "referrer", "get")
+            .mockReturnValue(`${window.location.origin}/demos/onboarding`);
+        render(<EditorShell slug="onboarding" />);
+        await act(flushMicrotasks);
+        fireEvent.click(screen.getByLabelText("Back"));
+        expect(back).toHaveBeenCalledTimes(1);
+
+        // From another site (or nowhere), the link itself is followed.
+        referrer.mockReturnValue("https://elsewhere.example/");
+        fireEvent.click(screen.getByLabelText("Back"));
+        expect(back).toHaveBeenCalledTimes(1);
+        vi.restoreAllMocks();
     });
 
     it("Share opens the rail-and-pane dialog; pasting the published link fills the snippets", async () => {

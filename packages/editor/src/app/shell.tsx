@@ -1,4 +1,4 @@
-import { ExternalLinkIcon, Share2Icon } from "lucide-react";
+import { ArrowLeftIcon, ExternalLinkIcon, Share2Icon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -7,6 +7,7 @@ import {
     getHostCapabilities,
     listDemoAssets,
     putDemoFiles,
+    resolveHostHref,
     type HostCapabilities,
 } from "@/api";
 import { CONFIG_PATH, parseDemoConfig } from "@/components/demo-editor/codec";
@@ -26,6 +27,19 @@ const BROKEN_CONFIG_POLL_MS = 2000;
 
 function demoHref(slug: string): string {
     return `/${slug.split("/").map(encodeURIComponent).join("/")}/`;
+}
+
+/**
+ * Whether the page before this one is on the same host, so going back
+ * returns to it: the dashboard or demo page the editor was opened from.
+ */
+function cameFromThisHost(): boolean {
+    if (window.history.length < 2 || !document.referrer) return false;
+    try {
+        return new URL(document.referrer).origin === window.location.origin;
+    } catch {
+        return false;
+    }
 }
 
 function titleFromFiles(files: Record<string, string>, slug: string): string {
@@ -320,6 +334,12 @@ export function EditorShell({ slug }: { slug: string }) {
         .join("\n");
 
     const title = files ? titleFromFiles(files, slug) : slug;
+    // Where the header's links go: the host's pages when it names them, else
+    // the CLI's — its demo index, and the demo's own page.
+    const hostLinks = hostCapabilities.links;
+    const backHref = hostLinks?.back ? resolveHostHref(hostLinks.back, slug) : "/";
+    const backLabel = hostLinks?.back?.label ?? "Back";
+    const openHref = hostLinks?.demo ? resolveHostHref(hostLinks.demo, slug) : demoHref(slug);
 
     return (
         <div className="flex h-screen w-screen flex-col overflow-hidden bg-background text-foreground">
@@ -329,6 +349,29 @@ export function EditorShell({ slug }: { slug: string }) {
                 other half of the same product; an 8px-shorter header read
                 as a different app. */}
             <header className="flex h-14 shrink-0 items-center gap-3 border-b px-5">
+                {/* Back to the page the editor was opened from; a link, so it
+                    also works opened in a new tab (to the host's page, or
+                    the CLI's demo index). */}
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className="-ml-2"
+                    nativeButton={false}
+                    render={
+                        <a
+                            href={backHref}
+                            aria-label={backLabel}
+                            title={backLabel}
+                            onClick={(event) => {
+                                if (!cameFromThisHost()) return;
+                                event.preventDefault();
+                                window.history.back();
+                            }}
+                        />
+                    }
+                >
+                    <ArrowLeftIcon className="size-4" />
+                </Button>
                 <InklyLogo />
                 <span aria-hidden className="h-5 w-px shrink-0 bg-border" />
                 <span className="truncate text-sm font-semibold">{title}</span>
@@ -339,7 +382,7 @@ export function EditorShell({ slug }: { slug: string }) {
                     <Button
                         variant="secondary"
                         nativeButton={false}
-                        render={<a href={demoHref(slug)} target="_blank" rel="noreferrer" />}
+                        render={<a href={openHref} target="_blank" rel="noreferrer" />}
                     >
                         Open demo
                         <ExternalLinkIcon className="size-3.5" />

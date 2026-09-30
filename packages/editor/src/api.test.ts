@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { generateVoiceover, getHostCapabilities } from "./api";
+import { generateVoiceover, getHostCapabilities, resolveHostHref } from "./api";
 
 function stubFetch(impl: (...args: unknown[]) => Promise<Response>) {
     const fetchMock = vi.fn(impl);
@@ -89,6 +89,45 @@ describe("getHostCapabilities", () => {
         expect(await getHostCapabilities()).toEqual({
             voiceover: { voices: [VOICE], maxChars: 800 },
         });
+    });
+});
+
+describe("host links", () => {
+    afterEach(() => {
+        vi.unstubAllGlobals();
+    });
+
+    it("keeps back and demo links that are host paths or http(s) URLs", async () => {
+        stubFetch(async () =>
+            jsonResponse({
+                links: {
+                    back: { href: "/demos/{slug}", label: "Back to demo" },
+                    demo: { href: "https://app.example/demos/{slug}" },
+                },
+            }),
+        );
+        expect(await getHostCapabilities()).toEqual({
+            links: {
+                back: { href: "/demos/{slug}", label: "Back to demo" },
+                demo: { href: "https://app.example/demos/{slug}" },
+            },
+        });
+    });
+
+    it("drops protocol-relative, javascript: and malformed links", async () => {
+        stubFetch(async () =>
+            jsonResponse({
+                links: { back: { href: "//evil.example/" }, demo: { href: "javascript:alert(1)" } },
+            }),
+        );
+        expect(await getHostCapabilities()).toEqual({});
+        stubFetch(async () => jsonResponse({ links: { back: "/" } }));
+        expect(await getHostCapabilities()).toEqual({});
+    });
+
+    it("fills {slug} with the encoded slug", () => {
+        expect(resolveHostHref({ href: "/demos/{slug}" }, "a b/c")).toBe("/demos/a%20b/c");
+        expect(resolveHostHref({ href: "/" }, "x")).toBe("/");
     });
 });
 

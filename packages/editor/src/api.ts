@@ -116,6 +116,33 @@ export interface HostVoice {
  */
 export interface HostCapabilities {
   voiceover?: { voices: HostVoice[]; maxChars: number };
+  /**
+   * Where the header's links go, when the host's pages are not the CLI's.
+   * Each `href` may contain `{slug}`, replaced with the open demo's slug.
+   */
+  links?: { back?: HostLink; demo?: HostLink };
+}
+
+/** A header link the host points: a path on the host, or an http(s) URL. */
+export interface HostLink {
+  href: string;
+  label?: string;
+}
+
+function parseHostLink(value: unknown): HostLink | null {
+  if (!value || typeof value !== 'object') return null;
+  const v = value as Record<string, unknown>;
+  if (typeof v.href !== 'string') return null;
+  // A path on the host (not protocol-relative) or an absolute http(s) URL;
+  // anything else — `javascript:` included — is dropped.
+  const href = v.href.trim();
+  if (!(/^\/(?!\/)/.test(href) || /^https?:\/\//i.test(href))) return null;
+  return typeof v.label === 'string' && v.label.trim() ? { href, label: v.label.trim() } : { href };
+}
+
+/** A host link's href for one demo: `{slug}` becomes the encoded slug. */
+export function resolveHostHref(link: HostLink, slug: string): string {
+  return link.href.split('{slug}').join(slug.split('/').map(encodeURIComponent).join('/'));
 }
 
 function parseHostVoice(value: unknown): HostVoice | null {
@@ -159,6 +186,12 @@ export async function getHostCapabilities(): Promise<HostCapabilities> {
           maxChars: Number.isFinite(maxChars) && maxChars > 0 ? maxChars : Infinity,
         };
       }
+    }
+    const links = (body as { links?: unknown }).links;
+    if (links && typeof links === 'object') {
+      const back = parseHostLink((links as { back?: unknown }).back);
+      const demo = parseHostLink((links as { demo?: unknown }).demo);
+      if (back || demo) caps.links = { ...(back ? { back } : {}), ...(demo ? { demo } : {}) };
     }
     return caps;
   } catch {
