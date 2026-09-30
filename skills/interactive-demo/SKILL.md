@@ -1,7 +1,7 @@
 ---
 name: interactive-demo
 description: Build an interactive product demo from a real web app and publish it as a shareable link or an embed. Use when the user asks to record, capture, author, preview, validate, build, embed or publish a product demo or walkthrough with the interactive-demo CLI. Covers scaffolding a project, driving Chrome to capture a click-through, writing the demo up, and getting a URL.
-compatibility: "Needs Node 20+ and the interactive-demo CLI (npx @inkly-org/interactive-demo-cli, bin `interactive-demo`). Capture drives a local Chrome or Chromium; video steps need ffmpeg on PATH. `login` and `publish` need an account on the hosting service — everything else works offline."
+compatibility: "Needs Node 20+ and the interactive-demo CLI (npx @inkly-org/interactive-demo-cli, bin `interactive-demo`). Capture drives a local Chrome or Chromium; video steps need ffmpeg on PATH. `login`, `publish` and `embed` need an account on the hosting service — everything else works offline."
 license: MIT
 allowed-tools: Bash
 ---
@@ -52,7 +52,8 @@ npx interactive-demo login && npx interactive-demo publish
 | Command | What it does |
 |---|---|
 | `interactive-demo init <name> [--theme default\|mono] [--no-starter-demo]` | Scaffold a project. |
-| `interactive-demo init --demo <slug> [--from <dir>]` | Add a demo to the project you are in, or import an existing demo folder. |
+| `interactive-demo init [--demo <slug>] --from <dir\|zip>` | Import an existing demo folder, or a `.zip` of one, into the project you are in. `--demo` is optional; the slug defaults to the source name. |
+| `interactive-demo init --demo <slug>` | Add a starter demo to the project you are in. |
 | `interactive-demo dev [<path>] [--port <n>]` | Local preview server (default port 3000). Also serves a browser editor at `/__demo/editor/`. |
 | `interactive-demo validate [--json] [--strict]` | Check every demo against the schema and confirm each referenced file exists. `--json` for a machine-readable result. |
 
@@ -76,11 +77,12 @@ Worth knowing before you run it:
   ends at `stop` or `cancel`.
 - Each click becomes a content step: a screenshot taken at click time, a
   `cursor` annotation reading `Click on "<label>"` from the element's
-  accessible name, and a zoom toward the point.
+  accessible name, and (on screenshot steps) a zoom toward the point.
 - **The final page is not captured unless you click again.** Land on it and
   click something harmless, or you will be one screen short.
 - Scrolling or typing right before a click is recorded as a short video step —
-  but only with `ffmpeg` on PATH. Without it you get a still instead, silently.
+  but only with `ffmpeg` on PATH. Without it `start` warns on stderr, reports
+  `videoDisabledReason` in its JSON, and you get stills instead.
 - `--headless` exists but is only useful when a script drives the page, or with
   `--connect-to-browser`. There is nobody to click in a headless window.
 - `--no-zoom`, `--no-video`, `--compress-images`, `--width`/`--height`
@@ -90,11 +92,11 @@ Worth knowing before you run it:
 
 | Command | What it does |
 |---|---|
-| `interactive-demo login` | Connect to the hosting service (browser flow). `login --status` shows who you are. |
+| `interactive-demo login` | Connect to the hosting service (browser flow). `login --status` shows the credentials path, the project, the API origin, whether a token is set, and whether the server still accepts it. |
 | `interactive-demo publish [<path>\|--demo <slug>] [--new] [--json]` | Publish and print the URL. Publishing again **updates the same URL**, so embeds keep working; `--new` mints a fresh one instead. |
-| `interactive-demo publish --list` | Every demo you have published. |
-| `interactive-demo build [--out <dir>]` | Write a self-contained folder per demo (default `dist/`) plus `embed.js`, to host anywhere. **Clears the output folder first.** |
-| `interactive-demo embed [<slug>] [--mode inline\|popup] [--label <text>] [--json]` | Print the embed snippet for a published demo. |
+| `interactive-demo publish --list` | Every demo in the project, with its URL or `(not published)`. |
+| `interactive-demo build [--out <dir>] [--force]` | Write a self-contained folder per demo (default `dist/`) plus `embed.js`, to host anywhere. **Empties the output folder first** — only one it created (it leaves a `.interactive-demo-build` marker) or an empty one, unless you pass `--force`. |
+| `interactive-demo embed [<path>\|--demo <slug>] [--mode inline\|popup] [--label <text>] [--json]` | Print the embed snippet for a published demo. Publishes it first if it was never deployed. |
 
 Publishing is the short path to a link — nothing to deploy. `build` is the
 self-host path. The embed snippets are identical either way; only the origin
@@ -105,10 +107,12 @@ differs.
 After `capture stop`, read `demos/<slug>/demo.config.json` and improve it. The
 capture gives you structure, not writing.
 
-- **Captions** are the demo. Replace `Click on "Save"` with the reason someone
-  would click Save.
+- **Hotspot text** is the demo. Capture writes `Click on "Save"` into each
+  step's `cursor` message; replace it with the reason someone would click
+  Save.
 - **Order and trim.** Delete steps that do not earn their place.
-- **Chapters** group steps for a viewer who wants to skip.
+- **Chapters** group steps. The default player shows no chapter menu; they
+  are targets for a `chapter` button action and for a custom layout.
 - **The cover** is the first thing anyone sees; give it a real headline.
 - Run `interactive-demo validate` after editing. It catches a bad path or a
   broken reference before a viewer does.
@@ -120,10 +124,11 @@ itself. `docs/authoring.md` explains the concepts.
 
 - `validate` failing on a media path almost always means a file was moved
   without updating `demo.config.json`. Paths are relative to the demo folder.
-- A demo published twice has one row per publish unless you let it replace in
-  place. Check `publish --list` before assuming a link is stale.
-- `build` deletes its output folder before writing. Do not point `--out` at
-  anything you care about.
+- Re-publishing updates the same URL; only `--new` mints another. Check
+  `publish --list` before assuming a link is stale.
+- `build` empties its output folder before writing. It refuses a non-empty
+  folder it did not create; `--force` overrides that, so do not aim
+  `--force` at anything you care about.
 - `__demo` is a reserved slug and route prefix. So are `assets`, `api`, `c`.
 - The editor writes `demo.config.json` back in the shape you wrote it — key
   order kept, `$schema` first, defaults you never set left out. Hand-authored
