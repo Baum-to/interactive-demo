@@ -7,19 +7,25 @@
 
 <p align="center">
   <a href="https://github.com/inkly-ai/interactive-demo/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/inkly-ai/interactive-demo/actions/workflows/ci.yml/badge.svg"></a>
+  <a href="https://www.npmjs.com/package/@inkly-org/interactive-demo-cli"><img alt="npm" src="https://img.shields.io/npm/v/@inkly-org/interactive-demo-cli.svg"></a>
   <a href="LICENSE"><img alt="MIT" src="https://img.shields.io/badge/license-MIT-blue.svg"></a>
   <img alt="Node 20+" src="https://img.shields.io/badge/node-%E2%89%A520-brightgreen.svg">
 </p>
 
-![A demo playing: the cover, a captured screen with the cursor on the control that was clicked, the editor, the share dialog, and both embeds](docs/images/demo.webp)
-
-<p align="center"><em>Every screen above is a real screenshot of this tool, captured by this tool.<br>
-It lives in <a href="examples/self-demo">examples/self-demo</a> and is re-shot by <code>node testbed/shoot.mjs</code>.</em></p>
+<p align="center">
+  <a href="https://youtu.be/Mus1gXwJIJU"><img alt="Watch the launch video: interactive-demo, open-source interactive product demos, by Inkly" src="docs/images/launch-video.jpg" width="720"></a><br>
+  <a href="https://youtu.be/Mus1gXwJIJU"><strong>▶ Watch the launch video</strong></a>
+</p>
 
 ## What you get
 
-Screenshots or short clips of your real product, with hotspots and captions on
-top, playing as a click-through a viewer drives themselves.
+Screenshots or short clips of your real product, with hotspots on top,
+playing as a click-through a viewer drives themselves.
+
+![A demo playing: the cover, a captured screen with the cursor on the control that was clicked, the editor, the share dialog, and both embeds](docs/images/demo.webp)
+
+<p align="center"><em>Every screen above is a real screenshot of this tool, captured by this tool.<br>
+It lives in <a href="examples/self-demo">examples/self-demo</a>, whose screens are re-shot by <code>node testbed/shoot.mjs</code> and this animation by <code>node testbed/hero.mjs</code>.</em></p>
 
 - **One command to a link.** `publish` puts the demo online and prints its URL.
   Publishing again updates the same link, so embeds keep working.
@@ -30,6 +36,8 @@ top, playing as a click-through a viewer drives themselves.
 - **Capture from the live app.** Click through your product in Chrome; every
   click becomes a step, with the pointer where you clicked. Scroll or type
   before a click and that step is recorded as a short video instead.
+- **Narrate it.** Record a voiceover for any step in the editor, or attach an
+  audio file; the step lasts at least as long as its narration.
 
 ## Quickstart
 
@@ -46,8 +54,8 @@ npx interactive-demo capture start https://app.example.com --name "Onboarding"
 npx interactive-demo capture stop
 ```
 
-**Write it up.** Capture gives you structure, not writing — the captions are
-the demo:
+**Write it up.** Capture gives you structure, not writing — the words on each
+step are the demo:
 
 ```sh
 npm run dev     # preview on :3000, editor at /__demo/editor/
@@ -64,9 +72,10 @@ That is the whole hosting step. Nothing to deploy, nothing to configure.
 ## The editor
 
 `dev` serves a browser editor that writes straight back to the demo's files in
-your repo — captions, hotspots, chapters, step order, the cover. Your
-hand-written `demo.config.json` survives a round trip through it: key order
-kept, `$schema` first, defaults you never set left out.
+your repo — hotspots and their text, blur and zoom, voiceover, covers and
+their buttons, step order, crop and trim, the demo's look. Your hand-written
+`demo.config.json` survives a round trip through it: key order kept,
+`$schema` first, defaults you never set left out.
 
 ![The editor: the filmstrip on the right, the preview in the middle, the annotation toolbar below](docs/images/editor-anim.webp)
 
@@ -85,15 +94,18 @@ Send the link, frame the page, or render it inside your own React app. The
 first two use the built page; the third skips it.
 
 ```html
-<!-- inline -->
-<iframe src="https://your-site.com/demos/onboarding/"
-        width="960" height="600" loading="lazy"
-        allow="fullscreen" style="border:0; max-width:100%"></iframe>
+<!-- inline: ?embed=inline drops the page's own bar and canvas -->
+<iframe src="https://your-site.com/demos/onboarding/?embed=inline"
+        loading="lazy" allow="fullscreen"
+        style="border:0; width:100%; height:min(900px, 80vh)"></iframe>
 
 <!-- or a button that opens it over your page -->
 <script src="https://your-site.com/demos/embed.js" async></script>
 <button onclick="InteractiveDemo.open('https://your-site.com/demos/onboarding/')">Try the demo</button>
 ```
+
+`npx interactive-demo embed` prints these for your demo, with the inline frame
+sized to its aspect ratio.
 
 ```tsx
 import { Demo } from '@inkly-org/interactive-demo';
@@ -102,17 +114,19 @@ import '@inkly-org/interactive-demo/styles.css';
 <Demo src="/demos/onboarding/" />
 ```
 
-`src` is the folder — the component fetches `demo.config.json` from it and
+`src` is a copy of the demo's source folder (`demos/<slug>/`, not the built
+one) served by your app — the component fetches `demo.config.json` from it and
 loads the media next to it. [docs/embedding.md](docs/embedding.md) walks the
 whole choice, plus hosting, sizing and events.
 
 <details>
 <summary><strong>The static page contract</strong> — assemble a page yourself</summary>
 
-Every built page is the same four lines:
+The player needs only this (a built page adds its title bar around it):
 
 ```html
 <link rel="stylesheet" href="./player.css">
+<link rel="stylesheet" href="./player-fonts.css">  <!-- optional; ./fonts/ next to it -->
 <script id="demo-config" type="application/json">{ …demo.config.json… }</script>
 <div id="root"></div>
 <script src="./player.js"></script>
