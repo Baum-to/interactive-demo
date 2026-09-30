@@ -1,4 +1,6 @@
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { main, type MainIo } from '../src/main';
 
@@ -119,6 +121,20 @@ describe('interactive-demo help', () => {
     expect(code).toBe(1);
     expect(stderr).not.toContain('--demo needs a <slug>');
     expect(stderr).toContain('Not inside a project');
+  });
+
+  it('accepts and ignores a leftover --theme on init, with a warning', async () => {
+    const cwd = await mkdtemp(join(tmpdir(), 'interactive-demo-main-'));
+    try {
+      const { code, stderr } = await run(['init', 'themed', '--theme', 'mono'], cwd);
+      expect(code).toBe(0);
+      expect(stderr).toBe('interactive-demo init: theme presets were removed; --theme is ignored.\n');
+      const project = JSON.parse(await readFile(join(cwd, 'themed', 'interactive-demo.json'), 'utf8'));
+      expect(project).not.toHaveProperty('theme');
+      expect((await run(['init', '--help'])).stdout).not.toContain('--theme');
+    } finally {
+      await rm(cwd, { recursive: true, force: true });
+    }
   });
 
   it('prints a package version', async () => {

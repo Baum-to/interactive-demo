@@ -8,7 +8,6 @@ import {
   isValidDemoId,
   validateDemoSlug,
 } from '@inkly-org/interactive-demo/schema';
-import { demoThemePresetsById } from '@inkly-org/interactive-demo/themes';
 import { atomicWriteFile } from '../fs-atomic.js';
 import {
   findProjectRoot,
@@ -28,8 +27,6 @@ import { readCliVersion } from './version.js';
 export interface InitOptions {
   name: string;
   cwd: string;
-  /** Optional theme preset id written to the project file. */
-  theme?: string;
   /** Suppress the "next steps" stdout block. Used by tests. */
   silent?: boolean;
   /** Scaffold an EMPTY project: no `getting-started` starter demo. */
@@ -47,17 +44,6 @@ export interface InitResult {
  */
 function toLocalPath(p: string): string {
   return sep === '/' ? p : p.split('/').join(sep);
-}
-
-function checkTheme(theme: string | undefined): void {
-  if (theme === undefined) return;
-  if (theme.length === 0) {
-    throw new Error('Invalid theme. Expected a theme preset id.');
-  }
-  if (!demoThemePresetsById[theme]) {
-    const known = Object.keys(demoThemePresetsById).join(', ');
-    throw new Error(`Invalid theme "${theme}". Expected one of: ${known}.`);
-  }
 }
 
 /**
@@ -79,13 +65,12 @@ async function writeSkeletonFile(
 }
 
 export async function runInit(options: InitOptions): Promise<InitResult> {
-  const { name, cwd, theme, silent } = options;
+  const { name, cwd, silent } = options;
 
   const slugCheck = validateDemoSlug(name);
   if (!slugCheck.ok) {
     throw new Error(slugCheck.reason);
   }
-  checkTheme(theme);
 
   const dir = resolve(cwd, name);
 
@@ -102,7 +87,6 @@ export async function runInit(options: InitOptions): Promise<InitResult> {
   const { version } = await readCliVersion();
   const files = getProjectSkeleton({
     name,
-    theme,
     noStarterDemo: options.noStarterDemo,
     cliVersion: `^${version}`,
   });

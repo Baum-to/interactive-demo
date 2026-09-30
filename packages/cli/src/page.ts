@@ -154,8 +154,6 @@ function escapeHtml(text: string): string {
 export interface DemoPageInput {
   template: string;
   config: Demo;
-  /** Theme preset id inherited from the project, when the demo sets none. */
-  themeId?: string;
   /** Project-level token overrides. */
   themeTokens?: ThemeTokens | null;
   /** Project name + brand for the page header above the player. */
@@ -197,7 +195,6 @@ function externalLink(className: string, link: { href: string; label: string }):
 export function renderPageHeader(input: {
   project?: DemoPageProject | null;
   demoTitle: string;
-  themeId: string;
   accent?: string | null;
   /** Link to the local editor for this demo; rendered as an Edit button ahead of the CTAs. */
   editHref?: string | null;
@@ -229,39 +226,41 @@ export function renderPageHeader(input: {
   if (brand?.cta) ctas.push(externalLink('demo-page-cta is-primary', brand.cta));
   const accentStyle = input.accent ? ` style="--demo-page-accent: ${attr(input.accent)}"` : '';
   parts.push(
-    `<span class="demo-page-cta-scope" data-theme="${attr(input.themeId)}"${accentStyle}>${ctas.join('')}</span>`,
+    `<span class="demo-page-cta-scope" data-theme="default"${accentStyle}>${ctas.join('')}</span>`,
   );
   return `<header class="demo-page-bar">${parts.join('')}</header>`;
 }
 
 /**
- * Fold project-level theme settings into the demo config: the project's
- * preset applies when the demo names none, and project tokens sit under the
- * demo's own token overrides. The page then carries one self-contained
- * config and the player needs no second source.
+ * Fold project-level theme settings into the demo config: project tokens sit
+ * under the demo's own token overrides. The page then carries one
+ * self-contained config and the player needs no second source.
+ *
+ * There is one theme. A demo's `theme.preset` is from before that and is
+ * dropped from the page rather than handed to the player, so a page built
+ * against an older player still gets the one look.
  */
 export function applyProjectTheme(
   config: Demo,
-  themeId: string | undefined,
   themeTokens: ThemeTokens | null | undefined,
 ): Demo {
-  if (!themeId && !themeTokens) return config;
-  const theme = config.theme ?? {};
-  return {
-    ...config,
-    theme: {
-      ...theme,
-      ...(theme.preset || !themeId ? {} : { preset: themeId }),
-      ...(themeTokens || theme.tokens
-        ? { tokens: { ...(themeTokens ?? {}), ...(theme.tokens ?? {}) } }
-        : {}),
-    },
+  const theme = config.theme;
+  if (!themeTokens && theme?.preset === undefined) return config;
+  const { preset: _preset, ...rest } = theme ?? {};
+  const next = {
+    ...rest,
+    ...(themeTokens || rest.tokens
+      ? { tokens: { ...(themeTokens ?? {}), ...(rest.tokens ?? {}) } }
+      : {}),
   };
+  if (Object.keys(next).length > 0) return { ...config, theme: next };
+  const { theme: _theme, ...withoutTheme } = config;
+  return withoutTheme as Demo;
 }
 
 /** Render a demo into the page template. */
 export function renderDemoPage(input: DemoPageInput): string {
-  const config = applyProjectTheme(input.config, input.themeId, input.themeTokens);
+  const config = applyProjectTheme(input.config, input.themeTokens);
   const title = config.title ?? config.id;
   let html = input.template.replace(
     /<title>[\s\S]*?<\/title>/,
@@ -271,7 +270,6 @@ export function renderDemoPage(input: DemoPageInput): string {
   const header = renderPageHeader({
     project: input.project,
     demoTitle: title,
-    themeId: config.theme?.preset ?? 'default',
     accent: config.theme?.tokens?.primary ?? null,
     editHref: input.editHref ?? null,
   });

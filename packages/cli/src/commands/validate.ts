@@ -1,5 +1,4 @@
 import { existsSync } from 'node:fs';
-import { demoThemePresetsById } from '@inkly-org/interactive-demo/themes';
 import { brandLogoSourcePath, isAbsoluteBrandRef, loadProject, PROJECT_FILE, validateSlugForPath } from '../project.js';
 import { collectMediaPaths, mapMediaRefs } from '../media.js';
 import { resolve, sep } from 'node:path';
@@ -43,13 +42,10 @@ export async function runValidate(options: ValidateOptions): Promise<ValidateRes
     const loaded = await loadProject(options.cwd);
     projectRoot = loaded.root;
 
-    if (loaded.project.theme && !demoThemePresetsById[loaded.project.theme]) {
-      add(
-        issues,
-        'error',
-        PROJECT_FILE,
-        `Unknown theme "${loaded.project.theme}". Known themes: ${Object.keys(demoThemePresetsById).join(', ')}.`,
-      );
+    // There is one theme. A preset from before that still loads and is
+    // ignored; say so, so `--strict` gets it deleted.
+    if (loaded.project.theme !== undefined) {
+      add(issues, 'warning', PROJECT_FILE, 'theme presets were removed; `theme` is ignored — delete it.');
     }
 
     const brandLogo = loaded.project.brand?.logo?.trim();
@@ -83,12 +79,12 @@ export async function runValidate(options: ValidateOptions): Promise<ValidateRes
       const slugsForId = idToSlugs.get(demo.config.id);
       if (slugsForId) slugsForId.push(demo.slug);
       else idToSlugs.set(demo.config.id, [demo.slug]);
-      if (demo.config.theme?.preset && !demoThemePresetsById[demo.config.theme.preset]) {
+      if (demo.config.theme?.preset !== undefined) {
         add(
           issues,
-          'error',
+          'warning',
           `demos/${demo.slug}/demo.config.json`,
-          `Unknown demo theme preset "${demo.config.theme.preset}".`,
+          'theme presets were removed; `theme.preset` is ignored — delete it.',
         );
       }
 

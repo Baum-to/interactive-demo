@@ -16,7 +16,8 @@ function demo(extra: Record<string, unknown> = {}, background: Record<string, un
 describe('playerSizeForConfig', () => {
   it('takes the ratio from the first content step and the header from the theme', () => {
     expect(playerSizeForConfig(demo())).toEqual({ aspectRatio: { width: 1440, height: 900 }, verticalChromeHeight: 52 });
-    expect(playerSizeForConfig(demo({ theme: { preset: 'mono' } })).verticalChromeHeight).toBe(48);
+    // A deprecated preset is ignored: one theme, one header height.
+    expect(playerSizeForConfig(demo({ theme: { preset: 'mono' } })).verticalChromeHeight).toBe(52);
   });
 
   it('prefers an explicit aspectRatio and drops the header when it is hidden', () => {

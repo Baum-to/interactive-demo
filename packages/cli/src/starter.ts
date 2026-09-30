@@ -13,7 +13,6 @@ import { PROJECT_FILE, ProjectSchema } from './project.js';
  */
 
 export const STARTER_SLUG = 'getting-started';
-export const DEFAULT_THEME_ID = 'default';
 
 export interface SkeletonFile {
   /** Forward-slash path relative to the project root. */
@@ -267,10 +266,9 @@ export function starterDemoConfig(slug: string, title?: string): unknown {
   };
 }
 
-function projectConfig(name: string, options: { theme?: string } = {}): unknown {
+function projectConfig(name: string): unknown {
   return {
     name,
-    theme: options.theme ?? DEFAULT_THEME_ID,
     brand: { name },
     demos: [STARTER_SLUG],
   };
@@ -369,8 +367,6 @@ export interface ProjectSkeletonOptions {
    * package.json (e.g. `^0.1.0`). Defaults to `latest`.
    */
   cliVersion?: string;
-  /** Optional theme preset id written into the project file. */
-  theme?: string;
   /** Skip the starter demo. */
   noStarterDemo?: boolean;
 }
@@ -404,9 +400,9 @@ export function starterDemoFiles(slug: string, title?: string): {
  * here, not at the caller.
  */
 export function getProjectSkeleton(options: ProjectSkeletonOptions): SkeletonFile[] {
-  const { name, theme } = options;
+  const { name } = options;
 
-  const project = projectConfig(name, { theme });
+  const project = projectConfig(name);
   const projectParsed = ProjectSchema.safeParse(project);
   if (!projectParsed.success) {
     throw new Error(

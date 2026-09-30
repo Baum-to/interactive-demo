@@ -17,7 +17,7 @@ way; only the origin differs.
 
 | command | what it does |
 |---|---|
-| `init <name> [--theme <preset>] [--no-starter-demo]` | scaffold a new project |
+| `init <name> [--no-starter-demo]` | scaffold a new project |
 | `init --demo <slug> [--from <dir\|zip>]`, `init --from <dir\|zip>` | add a demo to the current project: scaffold one, or import a demo folder or a capture `.zip` (the slug defaults to the source name) |
 | `dev [<path>] [--port <n>]` | local preview server with live reload; also serves the editor and its API |
 | `validate [--json] [--strict]` | check the project file, every `demo.config.json` and every media path |
@@ -35,7 +35,7 @@ serves it in place. [docs/cli.md](../../docs/cli.md) has every flag.
 
 ```
 my-demos/
-  interactive-demo.json          name, optional theme/tokens/brand, optional demo order
+  interactive-demo.json          name, optional tokens/brand, optional demo order
   demos/
     <slug>/
       demo.config.json           the demo: steps, hotspots, captions, chapters

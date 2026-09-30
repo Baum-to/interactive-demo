@@ -36,7 +36,7 @@ Run \`${BIN} <command> --help\` for more.
 const INIT_USAGE = `${BIN} init — scaffold a new project, or add a demo to one
 
 Usage:
-  ${BIN} init <name> [--theme <preset>] [--no-starter-demo]
+  ${BIN} init <name> [--no-starter-demo]
   ${BIN} init --demo <slug> [--from <dir|zip>]
   ${BIN} init --from <dir|zip>
 
@@ -44,7 +44,6 @@ Arguments:
   <name>                 Folder name for the new project (kebab-case).
 
 Options:
-  --theme <preset>       Theme preset id to write to ${PROJECT_FILE}.
   --no-starter-demo      Scaffold an EMPTY project (no \`getting-started\`
                          sample demo).
   --demo <slug>          Inside an existing project: add demos/<slug>/ with a
@@ -318,11 +317,14 @@ export async function main(argv: string[], io: MainIo = defaultIo): Promise<numb
         io.stderr(`${BIN} init: missing <name> argument\n\n` + INIT_USAGE);
         return 1;
       }
-      const theme = readOptionalStringOption(args, 'theme');
+      // Theme presets were removed; an old `--theme` is accepted and ignored.
+      if (readOptionalStringOption(args, 'theme') !== undefined) {
+        io.stderr(`${BIN} init: theme presets were removed; --theme is ignored.\n`);
+      }
       // mri negates `--no-starter-demo` to `{ 'starter-demo': false }`.
       const noStarterDemo = args['starter-demo'] === false;
       try {
-        await runInit({ name, cwd: io.cwd, theme, noStarterDemo });
+        await runInit({ name, cwd: io.cwd, noStarterDemo });
         return 0;
       } catch (err) {
         io.stderr(`${BIN} init failed: ${(err as Error).message}\n`);

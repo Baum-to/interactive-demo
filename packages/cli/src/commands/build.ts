@@ -161,7 +161,6 @@ export async function runBuild(options: BuildOptions): Promise<BuildResult> {
     const html = renderDemoPage({
       template,
       config: demo.config,
-      themeId: loaded.project.theme,
       themeTokens: loaded.project.tokens ?? null,
       project: loaded.project,
     });

@@ -181,7 +181,6 @@ async function projectContext(project: LoadedProject, cwd: string, silent: boole
   return {
     name: project.project.name,
     runtime: await resolveRuntimeVersion(cwd),
-    ...(project.project.theme ? { theme: project.project.theme } : {}),
     ...(project.project.tokens ? { tokens: project.project.tokens } : {}),
     ...(brand ? { brand } : {}),
   };

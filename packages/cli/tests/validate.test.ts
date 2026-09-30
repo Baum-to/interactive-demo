@@ -42,7 +42,7 @@ describe('runValidate — media paths', () => {
     }
     await writeFile(
       join(projectDir, PROJECT_FILE),
-      JSON.stringify({ name: 'myproject', theme: 'mono', demos: ['tour'] }),
+      JSON.stringify({ name: 'myproject', demos: ['tour'] }),
     );
   }
 
@@ -210,16 +210,29 @@ describe('runValidate — project', () => {
     ).toBe(true);
   });
 
-  it('flags an unknown theme preset as an error', async () => {
-    const init = await runInit({ name: 'bad-theme', cwd: workdir, silent: true });
+  it('warns about a leftover theme preset, which fails only --strict', async () => {
+    const init = await runInit({ name: 'old-theme', cwd: workdir, silent: true });
     await writeFile(
       join(init.dir, PROJECT_FILE),
-      JSON.stringify({ name: 'bad-theme', theme: 'nope' }, null, 2) + '\n',
+      JSON.stringify({ name: 'old-theme', theme: 'mono' }, null, 2) + '\n',
       'utf8',
     );
+    const configPath = join(init.dir, 'demos', 'getting-started', 'demo.config.json');
+    const config = JSON.parse(await readFile(configPath, 'utf8'));
+    await writeFile(configPath, JSON.stringify({ ...config, theme: { ...config.theme, preset: 'mono' } }, null, 2) + '\n');
+
     const result = await runValidate({ cwd: init.dir, silent: true });
-    expect(result.ok).toBe(false);
-    expect(result.issues.some((i) => /Unknown theme "nope"/.test(i.message))).toBe(true);
+    expect(result.ok).toBe(true);
+    expect(result.errors).toBe(0);
+    expect(result.issues).toEqual([
+      { level: 'warning', file: PROJECT_FILE, message: 'theme presets were removed; `theme` is ignored — delete it.' },
+      {
+        level: 'warning',
+        file: 'demos/getting-started/demo.config.json',
+        message: 'theme presets were removed; `theme.preset` is ignored — delete it.',
+      },
+    ]);
+    expect((await runValidate({ cwd: init.dir, silent: true, strict: true })).ok).toBe(false);
   });
 
   it('reports a missing project file with a hint', async () => {

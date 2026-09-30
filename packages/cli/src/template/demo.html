@@ -329,62 +329,6 @@
         transform: translateY(1px);
         box-shadow: var(--demo-page-shadow-press);
       }
-
-      /* Mono theme's CTA buttons (the original preset's CTA rules). */
-      .demo-page-cta-scope[data-theme="mono"] {
-        --demo-page-accent: #5b6cff;
-        --demo-page-accent-soft: color-mix(in oklab, var(--demo-page-accent) 10%, white);
-        --demo-page-accent-soft-hover: color-mix(in oklab, var(--demo-page-accent) 15%, white);
-        --demo-page-accent-ink: color-mix(in oklab, var(--demo-page-accent) 72%, #0d0d0d);
-      }
-      .demo-page-cta-scope[data-theme="mono"] .demo-page-cta {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        padding: 9px 20px;
-        border-radius: 999px;
-        font-size: 13.5px;
-        font-weight: 500;
-        text-decoration: none;
-        border: 1px solid transparent;
-        cursor: pointer;
-        box-shadow: 0 1px 0 rgba(0,0,0,0.04);
-        transition:
-            background-color 120ms ease,
-            border-color 120ms ease,
-            box-shadow 120ms ease,
-            color 120ms ease,
-            transform 80ms ease;
-      }
-      .demo-page-cta-scope[data-theme="mono"] .demo-page-cta.is-primary {
-        background: var(--demo-page-accent);
-        color: #ffffff;
-        border-color: var(--demo-page-accent);
-        box-shadow: 0 8px 18px -14px color-mix(in oklab, var(--demo-page-accent) 62%, transparent);
-      }
-      .demo-page-cta-scope[data-theme="mono"] .demo-page-cta.is-primary:hover {
-        background: color-mix(in oklab, var(--demo-page-accent) 88%, black);
-        border-color: color-mix(in oklab, var(--demo-page-accent) 88%, black);
-        box-shadow: 0 12px 24px -16px color-mix(in oklab, var(--demo-page-accent) 72%, transparent);
-      }
-      .demo-page-cta-scope[data-theme="mono"] .demo-page-cta.is-secondary {
-        background: #ffffff;
-        color: var(--demo-page-accent-ink);
-        border-color: color-mix(in oklab, var(--demo-page-accent) 20%, #ececec);
-      }
-      .demo-page-cta-scope[data-theme="mono"] .demo-page-cta.is-secondary:hover {
-        background: var(--demo-page-accent-soft);
-        border-color: color-mix(in oklab, var(--demo-page-accent) 34%, #d4d4d4);
-        box-shadow: 0 6px 14px -12px color-mix(in oklab, var(--demo-page-accent) 38%, transparent);
-      }
-      .demo-page-cta-scope[data-theme="mono"] .demo-page-cta:active {
-        transform: translateY(1px);
-        box-shadow: inset 0 1px 2px color-mix(in oklab, var(--demo-page-accent) 34%, rgba(0,0,0,0.18));
-      }
-      .demo-page-cta-scope[data-theme="mono"] .demo-page-cta:focus-visible {
-        outline: 2px solid color-mix(in oklab, var(--demo-page-accent) 72%, white);
-        outline-offset: 2px;
-      }
       .demo-loading, .demo-error {
         padding: 24px;
         max-width: 720px;

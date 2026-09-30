@@ -61,7 +61,7 @@ describe('runInit', () => {
     const project = JSON.parse(await readFile(join(result.dir, PROJECT_FILE), 'utf8'));
     expect(ProjectSchema.safeParse(project).success).toBe(true);
     expect(project.name).toBe('sample');
-    expect(project.theme).toBe('default');
+    expect(project).not.toHaveProperty('theme');
     expect(project.demos).toEqual(['getting-started']);
     expect(project.runtime).toBeUndefined();
     expect(project.collections).toBeUndefined();
@@ -173,22 +173,10 @@ describe('runInit', () => {
     ).rejects.toThrow(/already exists/);
   });
 
-  it('writes the requested theme into the project file', async () => {
-    const result = await runInit({ name: 'themed', cwd: workdir, theme: 'mono', silent: true });
-    const project = JSON.parse(await readFile(join(result.dir, PROJECT_FILE), 'utf8'));
-    expect(project.theme).toBe('mono');
-  });
-
   it('rejects invalid project names', async () => {
     await expect(
       runInit({ name: 'Bad_Name', cwd: workdir, silent: true }),
     ).rejects.toThrow();
-  });
-
-  it('rejects unknown theme values', async () => {
-    await expect(
-      runInit({ name: 'bad-theme', cwd: workdir, theme: 'unknown-theme', silent: true }),
-    ).rejects.toThrow(/Invalid theme/);
   });
 });
 

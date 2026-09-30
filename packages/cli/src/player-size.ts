@@ -35,16 +35,13 @@ export function playerAspectRatioForConfig(config: Demo): PlayerAspectRatio {
   return { ...DEFAULT_ASPECT_RATIO };
 }
 
-/** Height of the player header per theme preset; must track the presets' CSS. */
-export function playerHeaderHeight(themeId: string | null | undefined): number {
-  if (themeId === 'mono') return 48;
-  return 52;
-}
+/** Height of the player header the theme draws; must track the theme's CSS (`.demo-header`). */
+export const PLAYER_HEADER_HEIGHT = 52;
 
 /** Vertical chrome above the stage: the header, unless the demo hides it. */
 export function playerVerticalChromeHeightForConfig(config: Demo): number {
   if (config.chrome?.hideHeader === true) return 0;
-  return playerHeaderHeight(config.theme?.preset ?? 'default');
+  return PLAYER_HEADER_HEIGHT;
 }
 
 export interface PlayerSize {

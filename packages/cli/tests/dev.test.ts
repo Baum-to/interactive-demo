@@ -156,10 +156,11 @@ describe('runDev project endpoints', () => {
     expect(body).toContain('<link rel="stylesheet" href="./player.css" />');
     expect(body).toContain('<script src="./player.js"></script>');
     expect(body).toContain('<div id="root">');
-    const config = readJsonScript(body, 'demo-config') as { title: string; theme: { preset: string; tokens: { primary: string } } };
+    const config = readJsonScript(body, 'demo-config') as { title: string; theme: { preset?: string; tokens: { primary: string } } };
     expect(config.title).toBe('Getting Started');
-    // Project theme + tokens folded into the embedded config.
-    expect(config.theme.preset).toBe('mono');
+    // Project tokens folded into the embedded config; the project's
+    // deprecated `theme` preset is ignored.
+    expect(config.theme.preset).toBeUndefined();
     expect(config.theme.tokens.primary).toBe('#5b3df5');
     expect((config as unknown as { steps: Array<{ background: { src: string } }> }).steps[0]?.background.src).toBe(`assets/${SHA}.png`);
     expect(body).not.toContain('demo-assets');

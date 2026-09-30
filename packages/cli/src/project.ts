@@ -20,16 +20,15 @@ export const PROJECT_FILE = 'interactive-demo.json';
  * - `demos` optionally orders the demos listed by `dev` and written by
  *   `build`. Demos are discovered by walking `demos/`; a slug listed here
  *   that has no folder is reported by `validate`.
- * - `theme` is the preset id every demo inherits unless it sets
- *   `theme.preset` itself.
- * - `tokens` overrides the preset's token defaults (primary, secondary,
+ * - `tokens` overrides the theme's token defaults (primary, secondary,
  *   font, radius). Demos may override these further.
+ * - `theme` is deprecated: theme presets were removed and there is one
+ *   theme. It is accepted and ignored; `validate` warns about it.
  *
  * @example
  * ```json
  * {
  *   "name": "Acme demos",
- *   "theme": "default",
  *   "tokens": { "primary": "#5b3df5" },
  *   "demos": ["onboarding", "billing"]
  * }
@@ -55,6 +54,7 @@ export const ProjectSchema = z.object({
   $schema: z.string().optional(),
   name: z.string().min(1),
   demos: z.array(z.string().min(1)).optional(),
+  /** @deprecated Theme presets were removed; accepted and ignored. */
   theme: z.string().min(1).optional(),
   tokens: ThemeTokensSchema.optional(),
   brand: ProjectBrandSchema.optional(),

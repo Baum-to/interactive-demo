@@ -34,18 +34,27 @@ describe('renderDemoPage', () => {
     expect(html).not.toContain('type="application/json">null</script>');
   });
 
-  it('folds the project theme under the demo’s own settings', () => {
+  it('folds the project tokens under the demo’s own settings', () => {
     const base = parseDemo(starterDemoConfig('tour'));
-    const themed = applyProjectTheme(base, 'mono', { primary: '#111111', secondary: '#eeeeee' });
-    expect(themed.theme?.preset).toBe('mono');
+    const themed = applyProjectTheme(base, { primary: '#111111', secondary: '#eeeeee' });
+    expect(themed.theme?.preset).toBeUndefined();
     // The demo's own token wins over the project token.
     expect(themed.theme?.tokens?.primary).toBe(base.theme?.tokens?.primary);
     expect(themed.theme?.tokens?.secondary).toBe(base.theme?.tokens?.secondary);
 
-    const withPreset = applyProjectTheme({ ...base, theme: { preset: 'other' } }, 'mono', null);
-    expect(withPreset.theme?.preset).toBe('other');
+    expect(applyProjectTheme(base, undefined)).toBe(base);
+  });
 
-    expect(applyProjectTheme(base, undefined, undefined)).toBe(base);
+  it('drops a deprecated theme.preset from the page config and keeps the rest', () => {
+    const base = parseDemo(starterDemoConfig('tour'));
+    const withPreset = applyProjectTheme({ ...base, theme: { ...base.theme, preset: 'mono' } }, null);
+    expect(withPreset.theme).toEqual(base.theme);
+
+    const presetOnly = applyProjectTheme({ ...base, theme: { preset: 'mono' } }, null);
+    expect(presetOnly).not.toHaveProperty('theme');
+    expect(applyProjectTheme({ ...base, theme: { preset: 'mono' } }, { primary: '#111111' }).theme).toEqual({
+      tokens: { primary: '#111111' },
+    });
   });
 });
 
@@ -114,33 +123,31 @@ describe('page header', () => {
     const withEdit = renderPageHeader({
       project: { name: 'Acme', brand: { cta: { label: 'Start', href: 'https://acme.example' } } },
       demoTitle: 'Tour',
-      themeId: 'default',
       editHref: '/__demo/editor/#/tour',
     });
     expect(withEdit).toContain('<a href="/__demo/editor/#/tour" class="demo-page-cta is-secondary demo-page-edit">Edit</a>');
     expect(withEdit).not.toContain('demo-page-edit" target');
     expect(withEdit.indexOf('demo-page-edit')).toBeLessThan(withEdit.indexOf('is-primary'));
 
-    const built = renderPageHeader({ project: { name: 'Acme' }, demoTitle: 'Tour', themeId: 'default' });
+    const built = renderPageHeader({ project: { name: 'Acme' }, demoTitle: 'Tour' });
     expect(built).not.toContain('demo-page-edit');
   });
 
-  it('keys the buttons on the effective theme and carries the primary token as the accent', () => {
+  it('keys the buttons on the one theme and carries the primary token as the accent', () => {
     const html = renderDemoPage({
       template,
-      config,
-      themeId: 'mono',
+      config: { ...config, theme: { ...config.theme, preset: 'mono' } },
       themeTokens: { primary: '#ff0000' },
       project: { name: 'Acme Demos', brand: { cta: { label: 'Go', href: 'https://acme.example' } } },
     });
-    expect(html).toContain('<span class="demo-page-cta-scope" data-theme="mono" style="--demo-page-accent: #ff0000">');
+    expect(html).toContain('<span class="demo-page-cta-scope" data-theme="default" style="--demo-page-accent: #ff0000">');
+    expect(html).not.toContain('"preset"');
   });
 
   it('escapes brand text and passes absolute logo URLs through', () => {
     const header = renderPageHeader({
       project: { name: 'A <b>', brand: { name: 'X & Y', logo: 'https://cdn.example/logo.png' } },
       demoTitle: '"Quoted"',
-      themeId: 'default',
     });
     expect(header).not.toContain('A <b>');
     expect(header).toContain('X &amp; Y');

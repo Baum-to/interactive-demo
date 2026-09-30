@@ -902,7 +902,6 @@ export async function runDev(options: DevOptions): Promise<DevHandle> {
                 const html = renderDemoPage({
                   template: demoTemplate,
                   config: demo.config,
-                  themeId: state.project.theme,
                   themeTokens: state.project.tokens ?? null,
                   project: state.project,
                   editHref: editorDir ? `${EDITOR_STATIC_PREFIX}/#/${demo.slug}` : null,
