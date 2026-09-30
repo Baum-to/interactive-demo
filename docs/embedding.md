@@ -1,35 +1,29 @@
 # Sharing and embedding a demo
 
-`interactive-demo build` writes one self-contained folder per demo:
-
-```
-dist/<slug>/
-  index.html      the page (four lines: stylesheet, the config script tag, root, player.js)
-  player.js       the player with React bundled in
-  player.css      the stylesheet
-  player-fonts.css  optional self-hosted files: fonts/*.woff2 and backgrounds/ (the
-                    default theme's watercolor cover); drop them to fall back to
-                    system fonts and a flat cover
-  assets/…        screenshots, recordings, audio
-dist/embed.js     the pop-up loader, once for the whole folder (see below)
-```
-
-Nothing in the folder depends on where it is served from: every URL inside
-it is relative to the page. Move the folder, rename it, nest it under any
-path, and it still works.
+Two questions decide how a demo gets in front of someone: does it run as its
+own page or inside your React app, and — for the page — who hosts it.
 
 ## Which of these do you want?
 
-A built demo is a page. There are three ways to put it in front of someone,
-and the first thing to decide is whether the demo runs in its own document or
+A demo is a page. There are three ways to put it in front of someone, and
+the first thing to decide is whether the demo runs in its own document or
 inside your app's:
 
 |  | on its own | inline in a page | as a pop-up |
 |---|---|---|---|
-| **the built page** | send the link | `<iframe>` | `embed.js` |
+| **the demo page** | send the link | `<iframe>` | `embed.js` |
 | **your React app** | — | `<Demo>` | `<DemoModal>` |
 
-The top row is the same page used three ways. Send someone the URL and they
+For the page, the second question is who hosts it:
+
+| who hosts the page | how | what you get |
+|---|---|---|
+| the hosting service | `interactive-demo publish` | a URL, nothing to deploy |
+| you | `interactive-demo build`, then upload `dist/` | a URL on your own static host |
+
+The snippets below are the same either way; only the origin in them differs.
+
+In the first table, the top row is the same page used three ways. Send someone the URL and they
 get the demo full-screen; frame that same URL and it sits in your page;
 point the loader script at it and it opens over your page. Nothing is
 installed, and the page doing the embedding can be React, Vue, Rails or plain
@@ -46,11 +40,11 @@ it. The trade is real either way: an iframe costs you a second document and
 cross-document messaging for size and events, while the component costs you
 the player in your bundle.
 
-They also need different things deployed. The top row serves `dist/` from
-`build`. The bottom row does not use `dist/` at all — it wants the demo
-*folder* (its `demo.config.json` and `assets/`) reachable as static files,
-plus `@inkly-org/interactive-demo` installed. That catches people out, so it
-is worth saying twice.
+They also need different things deployed. The top row needs the page at a
+URL — published, or `dist/` from `build` on your host. The bottom row does
+not use `dist/` at all — it wants the demo *folder* (its `demo.config.json`
+and `assets/`) reachable as static files, plus `@inkly-org/interactive-demo`
+installed. That catches people out, so it is worth saying twice.
 
 ## Getting the page online
 
@@ -72,6 +66,25 @@ old one left alone.
 
 ### Or host it yourself
 
+`interactive-demo build` writes one self-contained folder per demo:
+
+```
+dist/<slug>/
+  index.html      the page (four lines: stylesheet, the config script tag, root, player.js)
+  player.js       the player with React bundled in
+  player.css      the stylesheet
+  player-fonts.css  optional self-hosted files: fonts/*.woff2 and backgrounds/ (the
+                    default theme's watercolor cover); drop them to fall back to
+                    system fonts and a flat cover
+  assets/…        screenshots, recordings, audio
+  brand/…         the project logo, when brand.logo is a project file
+dist/embed.js     the pop-up loader, once for the whole folder (see below)
+```
+
+Nothing in the folder depends on where it is served from: every URL inside
+it is relative to the page. Move the folder, rename it, nest it under any
+path, and it still works.
+
 Any static host works: GitHub Pages, Netlify, Vercel, Cloudflare Pages, an S3
 bucket behind a CDN, or a folder on your existing web server. Upload `dist/`
 (or just one `dist/<slug>/`) and note the resulting URL of `index.html`.
@@ -86,9 +99,10 @@ Two things to keep:
 
 ## On its own: send the link
 
-`dist/<slug>/index.html` is a complete page, so the simplest thing you can do
-with a demo is send someone its URL. No snippet, nothing to install, and it
-is the same URL the iframe and the pop-up point at — the two sections below
+The demo page is complete on its own, so the simplest thing you can do with
+a demo is send someone its URL — the one `publish` printed, or
+`dist/<slug>/` on your host. No snippet, nothing to install, and it is the
+same URL the iframe and the pop-up point at — the two sections below
 are that page used in a frame rather than a different build of it.
 
 Add `?autoplay=1` if you want it to start playing as soon as it loads.
@@ -98,7 +112,8 @@ Add `?autoplay=1` if you want it to start playing as soon as it loads.
 Add `?embed=inline` to the page URL and the page renders the player alone:
 no bar, no canvas, transparent background, the player filling the frame
 edge to edge. Size the frame to the demo, which is its screen ratio plus the
-player's header (52px in the default theme, 48px in `mono`) and 2px for the card's border:
+player's header (52px in the default theme, 48px in `mono`, 0 when the demo
+sets `chrome.hideHeader`) and 2px for the card's border:
 
 ```html
 <div style="container-type: inline-size; width: 100%; max-width: calc(max(0px, 80vh - 54px) * 1440 / 900); margin: 0 auto;">
@@ -116,7 +131,8 @@ player's header (52px in the default theme, 48px in `mono`) and 2px for the card
 ```
 
 `interactive-demo embed` prints this with the numbers filled in from the
-demo, and so does the editor's Share dialog. The outer `max-width` keeps the
+demo, and so do `publish`, `build` (with a placeholder host) and the
+editor's Share dialog. The outer `max-width` keeps the
 frame under 80% of the viewport height; the inner box is the exact ratio
 plus header, so the player never letterboxes.
 
@@ -127,7 +143,9 @@ plus header, so the player never letterboxes.
 - Without `?embed=inline` the page keeps its own bar and canvas, which is
   what you want for a link, not an embed.
 - The player never reads or writes anything outside its own document. It
-  makes no network requests beyond loading its own files and assets.
+  makes no network requests beyond loading its own files and assets — the
+  one exception is a form widget with a `submitTo` URL, which POSTs its
+  values there.
 
 ## Pop-up: the loader script
 
@@ -144,12 +162,15 @@ and the hosting service serves the same file at `/embed.js`.
 ```
 
 The first line is a stub that queues clicks made before the script arrives.
-`open` draws a scrim and a centred 16:9 frame, loads the page inside it with
+`open` draws a scrim and a centred frame, loads the page inside it with
 `?embed=inline` so the page shows the player alone, and closes on Escape, on a
-click outside the frame, or on `InteractiveDemo.close()`. A relative URL is
-resolved against the host page. Hosted demos work the same way:
-`interactive-demo embed --mode popup` prints the loader and a button for
-HTML, React, Next.js, Vue and Svelte.
+click outside the frame, or on `InteractiveDemo.close()`. The frame starts at
+16:9 and takes the demo's own ratio, header included, as soon as the page
+reports its size (the `interactive-demo:size` message, see
+[runtime.md](runtime.md#embed-mode)). A relative URL is resolved against the
+host page. Hosted demos work the same way: `interactive-demo embed --mode
+popup` prints the loader and a button for HTML, React, Next.js, Vue and
+Svelte.
 
 ## Listening for events from an embedded demo
 
