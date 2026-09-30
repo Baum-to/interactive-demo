@@ -2,8 +2,8 @@
    The 4-token cascade (primary, secondary, font, radius) flows through
    `<Demo.Root>`'s inline style; the rest (bg, fg, primary-fg,
    secondary-fg, font-size, controls-bg) live as fixed defaults so the
-   structural CSS keeps rendering without authored tokens. Themes that
-   need different surfaces override them directly in their preset CSS. */
+   structural CSS keeps rendering without authored tokens. The theme's
+   CSS (`themes/default.ts`) overrides surfaces directly. */
 @property --zoom {
   syntax: "<number>";
   inherits: true;
@@ -1749,7 +1749,7 @@
  * Naming heads-up: every cover-step selector uses the legacy
  * `.demo-intro-*` prefix even though the schema-level step kind is
  * `cover`. This is intentional — themes (both in-package and the
- * presets under `themes/`) target these
+ * theme CSS under `themes/`) target these
  * selectors as a styling contract. The DOM hooks stay frozen; only
  * the schema was renamed (intro → cover) when the widget grid landed.
  *
@@ -2528,7 +2528,7 @@
    at 640px below). Using a smaller threshold here would create a dead
    zone where the cover-grid has already stacked but the type / media /
    attribution overrides hadn't kicked in yet. These are *base-layer*
-   defaults — themes that ship their own `[data-demo-theme="X"] .demo-intro-*`
+   defaults — themes that ship their own `[data-demo-theme="default"] .demo-intro-*`
    rules also ship a matching `@container demo-player (max-width: 640px)`
    block at the same selector specificity, so the cascade resolves
    cleanly without any `!important`.
@@ -2906,7 +2906,7 @@ a.demo-header-title-pill {
      Anchored on `.demo-player[data-mobile-footer-message="on"]` (rather
      than the bare attribute selector) to bump specificity to (0,3,0).
      Themes may ship
-     `[data-demo-theme="X"] .demo-player-shell { border-radius: inherit }`
+     `[data-demo-theme="default"] .demo-player-shell { border-radius: inherit }`
      at (0,2,0) and — because theme CSS is injected at runtime *after*
      this stylesheet — would otherwise win the cascade on a tie. */
   .demo-player[data-mobile-footer-message="on"] .demo-player-shell,

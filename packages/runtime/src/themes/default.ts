@@ -1,17 +1,13 @@
-import type { DemoThemePreset } from "../types";
-import { demoThemeDefaultTokensById } from "../token-defaults";
-
 /**
- * Default — indigo accent on a clean dotted background. Lifted card,
+ * The theme — indigo accent on a clean dotted background. Lifted card,
  * macOS-style frame, gradient header and CTA, serif display headlines
  * (system serif fallback; no webfonts are fetched).
  *
  * Only player rules live here: the frame, dotted backdrop, header, hotspot
  * bubbles, controls, caption, cover, badge and widgets. Everything is scoped
- * by [data-demo-theme="default"], which Demo.Root sets when this preset is
- * resolved.
+ * by [data-demo-theme="default"], which Demo.Root always sets.
  */
-const defaultCss = `
+export const demoThemeCss = `
 /* ────────────────────────────────────────────────────────────────
    Demo-player chrome. Activated via [data-demo-theme="default"]
    set by Demo.Root (and mirrored by the
@@ -550,10 +546,3 @@ const defaultCss = `
     }
 }
 `;
-
-export const defaultPreset: DemoThemePreset = {
-    id: "default",
-    label: "Default",
-    theme: demoThemeDefaultTokensById.default,
-    css: defaultCss,
-};

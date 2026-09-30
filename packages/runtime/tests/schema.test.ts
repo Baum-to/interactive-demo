@@ -171,6 +171,11 @@ describe('DemoSchema', () => {
     ).toBe('background.src');
   });
 
+  it('still accepts the deprecated theme.preset and keeps it', () => {
+    const parsed = DemoSchema.parse({ ...minimalDemo, theme: { preset: 'mono' } });
+    expect(parsed.theme?.preset).toBe('mono');
+  });
+
   it('accepts a higher future version (forward-compat) and rejects sub-1', () => {
     // `version` was widened from `z.literal(1)` to `z.number().int().min(1)`
     // so a future v2 demo parses instead of hard-failing to a blank player.

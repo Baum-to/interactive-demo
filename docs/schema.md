@@ -42,7 +42,7 @@ Per-demo configuration. One per demo, lives at demos/<slug>/demo.config.json.
 
 | field | type | required | notes |
 |---|---|---|---|
-| `preset` | string |  |  |
+| `preset` | string |  | Deprecated and ignored: theme presets were removed, there is one theme. Delete it. |
 | `tokens` | [tokens](#tokens) |  |  |
 | `brand` | [brand](#brand) |  |  |
 

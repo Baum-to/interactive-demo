@@ -247,25 +247,27 @@ describe('Demo integration', () => {
     ).toBe('0.8');
   });
 
-  it('falls back to the default theme primary when the requested preset is unknown', () => {
-    const validDemo = { ...integrationDemo, id: 'demo12345678' };
+  it('ignores a themeId prop and a theme.preset: one theme', () => {
+    const validDemo = {
+      ...integrationDemo,
+      id: 'demo12345678',
+      theme: { preset: 'mono' },
+    };
     const { container } = render(
       <Demo config={validDemo} themeId="substack" />,
     );
+    const root = container.querySelector<HTMLElement>('.demo-root');
 
-    expect(
-      container
-        .querySelector<HTMLElement>('.demo-root')
-        ?.style.getPropertyValue('--demo-primary'),
-    ).toBe('#5b6cff');
+    expect(root?.getAttribute('data-demo-theme')).toBe('default');
+    expect(root?.style.getPropertyValue('--demo-primary')).toBe('#5b6cff');
+    expect(root?.style.getPropertyValue('--demo-secondary')).toBe('#ebebeb');
   });
 
-  it('cascades selected theme, host tokens, then demo tokens', () => {
+  it('cascades the theme, host tokens, then demo tokens', () => {
     const validDemo = { ...integrationDemo, id: 'demo12345678' };
     const hostOverride = render(
       <Demo
         config={validDemo}
-        themeId="substack"
         themeTokens={{ primary: '#111111' }}
       />,
     );
@@ -288,7 +290,6 @@ describe('Demo integration', () => {
     const { container } = render(
       <Demo
         config={demoWithPrimaryOverride}
-        themeId="substack"
         themeTokens={{ primary: '#111111' }}
       />,
     );

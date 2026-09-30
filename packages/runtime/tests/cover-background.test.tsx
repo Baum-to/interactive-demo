@@ -69,7 +69,7 @@ describe('cover background precedence', () => {
 
   it('keeps CoverPreviewMini aligned with the canonical stage', () => {
     const { container } = render(
-      <CoverPreviewMini cover={gradientCover} themeId="test" />,
+      <CoverPreviewMini cover={gradientCover} />,
     );
 
     const intro = container.querySelector<HTMLElement>('.demo-intro');
@@ -101,7 +101,7 @@ describe('cover background precedence', () => {
       '16px',
     );
 
-    const mini = render(<CoverPreviewMini cover={imageCover} themeId="test" />);
+    const mini = render(<CoverPreviewMini cover={imageCover} />);
     const miniIntro = mini.container.querySelector<HTMLElement>('.demo-intro');
     expect(miniIntro?.style.getPropertyValue('--demo-cover-background-blur')).toBe(
       '16px',

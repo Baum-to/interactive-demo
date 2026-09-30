@@ -39,10 +39,9 @@ import type {
   Widget,
   WidgetImage,
 } from '../schema';
-import { defaultThemeTokens } from '../theme/tokens';
 import {
   DEFAULT_DEMO_THEME_ID,
-  demoThemeDefaultTokensFor,
+  demoThemeDefaultTokens,
 } from '../themes/token-defaults';
 
 const NOMINAL_WIDTH = 960;
@@ -149,6 +148,10 @@ function miniOverrides(stageW: number, stageH: number): string {
 
 export type CoverPreviewMiniProps = {
   cover: CoverStep;
+  /**
+   * @deprecated Theme presets were removed; there is one theme. Accepted
+   * for compatibility and ignored.
+   */
   themeId?: string;
   themeTokens?: Partial<ThemeTokens>;
   themeCss?: string;
@@ -163,15 +166,9 @@ export type CoverPreviewMiniProps = {
   glassImageSrc?: string;
 };
 
-function themeStyle(
-  themeId: string | undefined,
-  t: Partial<ThemeTokens> | undefined,
-): CSSProperties {
-  const activeThemeId = themeId ?? DEFAULT_DEMO_THEME_ID;
-  const presetTheme =
-    demoThemeDefaultTokensFor(activeThemeId) ?? defaultThemeTokens;
+function themeStyle(t: Partial<ThemeTokens> | undefined): CSSProperties {
   const tokens = {
-    ...presetTheme,
+    ...demoThemeDefaultTokens,
     ...(t ?? {}),
   };
   return {
@@ -467,7 +464,6 @@ function WidgetMini({ widget }: { widget: Widget }) {
 
 export function CoverPreviewMini({
   cover,
-  themeId,
   themeTokens,
   themeCss,
   className,
@@ -521,8 +517,8 @@ export function CoverPreviewMini({
       ) : null}
       <div
         className="intro-mini-stage demo-root"
-        data-demo-theme={themeId}
-        style={themeStyle(themeId, themeTokens)}
+        data-demo-theme={DEFAULT_DEMO_THEME_ID}
+        style={themeStyle(themeTokens)}
       >
         <div className="demo-player">
           <div className="demo-player-shell">

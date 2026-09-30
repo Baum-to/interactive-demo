@@ -105,12 +105,12 @@ function mount() {
     }
     const config = parsed.data;
 
-    // Resolve the demo's theme: `demo.theme.preset` wins, else the default.
+    // The one theme; a `theme.preset` in the config is ignored.
     const theme = resolveDemoTheme({ demoTheme: config.theme });
     const themeId = theme.themeId;
     ensureThemeStyle(themeId, theme.css);
 
-    function applyThemeCanvas(id: string) {
+    function applyThemeCanvas() {
       rootEl!.style.background = '';
       rootEl!.style.backgroundColor = '';
       rootEl!.style.backgroundImage = '';
@@ -118,18 +118,10 @@ function mount() {
       rootEl!.style.backgroundRepeat = '';
       rootEl!.style.backgroundSize = '';
 
-      if (id === 'mono') {
-        rootEl!.style.background = '#f7f7f7';
-        return;
-      }
-      if (id === 'default') {
-        rootEl!.style.background = '#f5f5f5';
-        rootEl!.style.backgroundImage =
-          'radial-gradient(circle at 1px 1px, rgba(0, 0, 0, 0.08) 0.5px, transparent 1px)';
-        rootEl!.style.backgroundSize = '10px 10px';
-        return;
-      }
-      rootEl!.style.background = '#f5f5f7';
+      rootEl!.style.background = '#f5f5f5';
+      rootEl!.style.backgroundImage =
+        'radial-gradient(circle at 1px 1px, rgba(0, 0, 0, 0.08) 0.5px, transparent 1px)';
+      rootEl!.style.backgroundSize = '10px 10px';
     }
 
     function resolveCanvasAssetUri(uri: string): string {
@@ -143,7 +135,7 @@ function mount() {
         : typeof config.backgroundColor === 'string'
           ? config.backgroundColor
           : '';
-    applyThemeCanvas(themeId);
+    applyThemeCanvas();
     if (
       demoBackground &&
       demoBackground.type === 'color' &&
@@ -158,7 +150,7 @@ function mount() {
       rootEl!.style.backgroundRepeat = 'no-repeat';
       rootEl!.style.backgroundSize = 'cover';
     } else if (demoBackground && demoBackground.type === 'none') {
-      // Keep the active theme's default player canvas.
+      // Keep the theme's default player canvas.
     } else if (canvasColor) {
       rootEl!.style.background = canvasColor;
     }
@@ -171,7 +163,6 @@ function mount() {
         { className: 'demo-wrap' },
         createElement(Demo, {
           config,
-          themeId,
           // Expose the window.__demo contract so a host page or exporter
           // can detect readiness, drive step seeks, and wait for completion.
           onReady: (info) => {

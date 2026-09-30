@@ -29,7 +29,7 @@ media resolves against it) or the config object itself (an imported
 `demo.config.json`; pass `baseUrl` for the folder its media lives in).
 `Demo` validates the config with `DemoSchema` and renders the player. Props
 of note: `baseUrl`, `resolveAssetUrl` (a custom rule for relative media
-paths, e.g. a CDN), `themeId`, `themeTokens`, `onEvent` (step views,
+paths, e.g. a CDN), `themeTokens`, `onEvent` (step views,
 completion, CTA clicks, form submits), `layout` and `controls`.
 
 `DemoModal` opens the same player in a pop-up over your page, rendered
@@ -84,14 +84,17 @@ import { DemoSchema, parseDemo } from '@inkly-org/interactive-demo/schema';
 
 `DEMO_CONFIG_SCHEMA_URL` is the `$schema` URL for editor autocompletion.
 
-## Themes
+## Theme
 
 ```ts
-import { resolveDemoTheme, demoThemePresets } from '@inkly-org/interactive-demo/themes';
+import { resolveDemoTheme } from '@inkly-org/interactive-demo/themes';
 ```
 
-Two presets ship: `default` (indigo accent, dotted canvas, serif display headings) and `mono` (flat, white paper, black ink). A preset is four tokens (primary, secondary,
-font, radius) plus optional scoped CSS.
+There is one theme: indigo accent, dotted canvas, serif display headings.
+Customise it with four tokens — `primary`, `secondary`, `font`, `radius` —
+through `themeTokens` or a demo's `theme.tokens`. `resolveDemoTheme().css`
+is the theme's scoped CSS for a React host to inject. Theme presets were
+removed: `theme.preset` and the `themeId` prop are accepted and ignored.
 
 ## Fonts (optional)
 

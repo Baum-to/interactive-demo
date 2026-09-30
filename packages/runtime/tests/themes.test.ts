@@ -1,39 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import {
-  demoThemePresetsById,
-  demoThemePresets,
+  demoThemeDefaultTokens,
   extractDemoTheme,
   injectResolvedThemeIntoConfig,
   resolveDemoBrand,
   resolveDemoTheme,
 } from '../src/themes';
 
-describe('demoThemePresetsById', () => {
-  it('includes the default and mono presets', () => {
-    expect(demoThemePresetsById['default']).toBeDefined();
-    expect(demoThemePresetsById['mono']).toBeDefined();
-  });
-
-  it('mono has a non-empty css string', () => {
-    const p = demoThemePresetsById['mono'];
-    expect(p).toBeDefined();
-    expect(typeof p!.css).toBe('string');
-    expect((p!.css ?? '').length).toBeGreaterThan(0);
-  });
-
-  it('mono exposes the 4 token fields', () => {
-    const p = demoThemePresetsById['mono'];
-    expect(p).toBeDefined();
-    const theme = p!.theme;
-    expect(theme.primary).toBeDefined();
-    expect(theme.secondary).toBeDefined();
-    expect(theme.font).toBeDefined();
-    expect(theme.radius).toBeDefined();
-  });
-
-  it('exports the full preset list', () => {
-    expect(Array.isArray(demoThemePresets)).toBe(true);
-    expect(demoThemePresets.length).toBeGreaterThan(0);
+describe('demoThemeDefaultTokens', () => {
+  it('exposes the 4 token fields', () => {
+    expect(demoThemeDefaultTokens.primary).toBe('#5b6cff');
+    expect(demoThemeDefaultTokens.secondary).toBeDefined();
+    expect(demoThemeDefaultTokens.font).toBeDefined();
+    expect(demoThemeDefaultTokens.radius).toBeDefined();
   });
 });
 
@@ -70,10 +49,9 @@ describe('resolveDemoTheme', () => {
     expect(resolved.css).toContain('[data-demo-theme="default"]');
   });
 
-  it('cascades preset tokens, host tokens, then demo tokens', () => {
+  it('cascades theme tokens, host tokens, then demo tokens', () => {
     const resolved = resolveDemoTheme({
       host: {
-        theme: 'mono',
         tokens: {
           primary: '#111111',
           secondary: '#222222',
@@ -90,18 +68,17 @@ describe('resolveDemoTheme', () => {
     expect(resolved.tokens.primary).toBe('#333333');
     expect(resolved.tokens.secondary).toBe('#222222');
     expect(resolved.tokens.radius).toBe('24px');
-    expect(resolved.tokens.font).toBe(
-      demoThemePresetsById['mono']!.theme.font,
-    );
+    expect(resolved.tokens.font).toBe(demoThemeDefaultTokens.font);
   });
 
-  it('falls back to default when the requested preset is unknown', () => {
-    const resolved = resolveDemoTheme({
-      demoTheme: { preset: 'missing-theme' },
-    });
-
-    expect(resolved.themeId).toBe('default');
-    expect(resolved.tokens.primary).toBe('#5b6cff');
+  it('ignores a preset from the demo or the host', () => {
+    for (const resolved of [
+      resolveDemoTheme({ demoTheme: { preset: 'mono' } }),
+      resolveDemoTheme({ host: { theme: 'mono' } }),
+      resolveDemoTheme({ demoTheme: { preset: 'missing-theme' }, fallbackThemeId: 'mono' }),
+    ]) {
+      expect(resolved).toEqual(resolveDemoTheme());
+    }
   });
 
   it('extracts and injects resolved tokens without dropping the preset', () => {
@@ -122,23 +99,17 @@ describe('resolveDemoTheme', () => {
       theme: {
         preset: 'mono',
         tokens: {
-          ...demoThemePresetsById['mono']!.theme,
+          ...demoThemeDefaultTokens,
           primary: '#123456',
         },
       },
     });
   });
-});
-
-describe('default preset', () => {
-  it('resolves with no input and still resolves mono explicitly', () => {
-    expect(resolveDemoTheme({}).themeId).toBe('default');
-    expect(resolveDemoTheme({ demoTheme: { preset: 'mono' } }).themeId).toBe('mono');
-  });
 
   it('carries only player-scoped css', () => {
-    const css = demoThemePresetsById['default']!.css;
+    const { css } = resolveDemoTheme();
     expect(css).toContain('[data-demo-theme="default"]');
+    expect(css).not.toMatch(/data-demo-theme="(?!default")/);
     expect(css).not.toMatch(/hub-index|inkly|http/i);
   });
 });

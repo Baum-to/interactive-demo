@@ -1,25 +1,21 @@
 /**
- * Demo theme catalog.
+ * The demo theme.
  *
  * The headless player ships structural CSS, layout primitives, and the
- * data hooks required for theming. Each preset (color tokens + optional
- * structural CSS) lives here so themes can evolve alongside the player.
+ * data hooks required for theming. There is one theme: its token defaults
+ * and its CSS live here. Tokens (`primary`, `secondary`, `font`, `radius`)
+ * are the customization point; host tokens and a demo's `theme.tokens`
+ * override the defaults.
  *
- * Themes that go beyond color tokens ship a `css` string that the host
- * injects in a scoped `<style>` tag, gated by a `data-demo-theme`
- * attribute on the player root.
- *
- * Each preset lives in its own file under `./presets/`. Add a new theme by
- * dropping a file there and appending its preset to `demoThemePresets` in
- * `./catalog.ts`.
+ * The theme's CSS is a string the host injects in a `<style>` tag, scoped
+ * by the `data-demo-theme="default"` attribute on the player root.
+ * `player.js` injects it on a static page.
  *
  * Consumers import from the `./themes` subpath:
- *   import { demoThemePresetsById, resolveDemoTheme } from
- *       "@inkly-org/interactive-demo/themes";
+ *   import { resolveDemoTheme } from "@inkly-org/interactive-demo/themes";
  */
 
-export type { DemoThemePreset } from "./types";
-export { demoThemePresets, demoThemePresetsById } from "./catalog";
+export { demoThemeDefaultTokens } from "./token-defaults";
 export {
     DEFAULT_DEMO_THEME_ID,
     extractDemoBrand,

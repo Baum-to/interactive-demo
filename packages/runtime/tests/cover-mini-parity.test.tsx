@@ -198,7 +198,6 @@ function renderAll() {
   for (const cover of FIXTURES) {
     const canonical = render(
       <Root
-        themeId="test"
         config={{
           id: 'parityDemo01',
           version: 1,
@@ -217,7 +216,7 @@ function renderAll() {
     );
     canonical.unmount();
 
-    const mini = render(<CoverPreviewMini cover={cover} themeId="test" />);
+    const mini = render(<CoverPreviewMini cover={cover} />);
     collectDemoClasses(mini.container).forEach((c) => miniClasses.add(c));
     collectDemoStructuralSignature(mini.container).forEach((s) =>
       miniSignature.add(s),
@@ -239,7 +238,7 @@ describe('CoverPreviewMini ↔ canonical Stage parity', () => {
     }
 
     const mini = render(
-      <CoverPreviewMini cover={emptyEmbedCover} themeId="test" />,
+      <CoverPreviewMini cover={emptyEmbedCover} />,
     );
 
     expect(mini.getByText('Embed forms and apps')).toBeTruthy();

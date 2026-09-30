@@ -12,9 +12,9 @@ const HexColor = z
 
 /**
  * Theme tokens shared by host + demo. Exactly four optional knobs —
- * everything else is preset-controlled CSS. The cascade is:
+ * everything else is the theme's CSS. The cascade is:
  *
- *   effective.tokens = { ...preset.defaults, ...host.tokens, ...demo.tokens }
+ *   effective.tokens = { ...theme.defaults, ...host.tokens, ...demo.tokens }
  *
  * @example
  * ```json

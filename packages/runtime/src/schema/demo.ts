@@ -207,14 +207,21 @@ export const DemoSchema = z
     backgroundColor: HexColorSchema.optional(),
     background: DemoBackgroundSchema.optional(),
     /**
-     * Per-demo theme override. `preset` picks the theme preset for this
-     * demo. `tokens` overrides individual tokens after the preset defaults
-     * have been applied. `brand` sets the brand identity (`logo`, `name`,
-     * `logoHref`) shown in the player header.
+     * Per-demo theme override. `tokens` overrides individual tokens after
+     * the theme's defaults have been applied. `brand` sets the brand
+     * identity (`logo`, `name`, `logoHref`) shown in the player header.
      */
     theme: z
       .object({
-        preset: z.string().min(1).optional(),
+        /**
+         * @deprecated Theme presets were removed; there is one theme.
+         * Accepted so older configs still parse, and ignored by the player.
+         */
+        preset: z
+          .string()
+          .min(1)
+          .optional()
+          .describe('Deprecated and ignored: theme presets were removed, there is one theme. Delete it.'),
         tokens: ThemeTokensSchema.optional(),
         brand: DemoBrandSchema.optional(),
       })

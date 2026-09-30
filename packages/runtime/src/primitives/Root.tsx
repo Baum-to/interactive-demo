@@ -20,7 +20,7 @@ import type {
 import { defaultThemeTokens } from '../theme/tokens';
 import {
   DEFAULT_DEMO_THEME_ID,
-  demoThemeDefaultTokensFor,
+  demoThemeDefaultTokens,
 } from '../themes/token-defaults';
 
 export type RootProps = {
@@ -29,15 +29,15 @@ export type RootProps = {
   className?: string;
   style?: CSSProperties;
   /**
-   * Identifier for the active visual theme. Emitted as `data-demo-theme` on
-   * the root so host CSS can scope overrides to a specific theme
-   * (e.g. `[data-demo-theme="mono"] .demo-controls { ... }`).
+   * @deprecated Theme presets were removed; there is one theme. Accepted
+   * for compatibility and ignored: the root always carries
+   * `data-demo-theme="default"`.
    */
   themeId?: string;
   /**
-   * Host-level theme token overrides. Root resolves
-   * preset defaults from `themeId`, then applies these, then applies
-   * `config.theme.tokens` so demo-level overrides still win.
+   * Host-level theme token overrides. Root starts from the theme's
+   * defaults, then applies these, then applies `config.theme.tokens` so
+   * demo-level overrides still win.
    */
   themeTokens?: Partial<ThemeTokens>;
   /**
@@ -98,7 +98,6 @@ export function Root({
   children,
   className,
   style,
-  themeId,
   themeTokens,
   attribution,
   onEvent,
@@ -144,17 +143,12 @@ export function Root({
   }, [baseUrl, resolveAssetUrl]);
 
   const player = usePlayerController(config, { resolveAsset });
-  // 4-token cascade (primary, secondary, font, radius). Resolve the
-  // selected preset locally so a raw demo config can still inherit the
-  // active theme's primary; host tokens and demo tokens layer on top.
-  // Removed tokens (bg/fg/primary-fg/secondary-fg/font-size/controls-bg)
-  // live as CSS-level defaults in styles.css now.
-  const activeThemeId =
-    themeId ?? player.demo?.theme?.preset ?? DEFAULT_DEMO_THEME_ID;
-  const presetTheme =
-    demoThemeDefaultTokensFor(activeThemeId) ?? defaultThemeTokens;
+  // 4-token cascade (primary, secondary, font, radius): the theme's
+  // defaults, then host tokens, then demo tokens. A `theme.preset` in the
+  // config is ignored. Removed tokens (bg/fg/primary-fg/secondary-fg/
+  // font-size/controls-bg) live as CSS-level defaults in styles.css now.
   const theme: ThemeTokens = {
-    ...presetTheme,
+    ...demoThemeDefaultTokens,
     ...(themeTokens ?? {}),
     ...(player.demo?.theme?.tokens ?? {}),
   };
@@ -259,7 +253,7 @@ export function Root({
       <div
         className={className ?? 'demo-root'}
         style={mergedStyle}
-        data-demo-theme={activeThemeId}
+        data-demo-theme={DEFAULT_DEMO_THEME_ID}
         data-demo-background={backgroundOverride.type}
       >
         {children}

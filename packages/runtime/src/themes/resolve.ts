@@ -1,17 +1,24 @@
 import type { Brand, DemoBrand, ThemeTokens } from '../schema';
 
-import { demoThemePresetsById } from "./catalog";
-import { DEFAULT_DEMO_THEME_ID } from "./token-defaults";
-import type { DemoThemePreset } from "./types";
+import { demoThemeCss } from "./default";
+import { DEFAULT_DEMO_THEME_ID, demoThemeDefaultTokens } from "./token-defaults";
 
 export { DEFAULT_DEMO_THEME_ID } from "./token-defaults";
 
 export type DemoThemeConfig = {
+    /**
+     * @deprecated Theme presets were removed; there is one theme. Accepted
+     * so older configs still load, and ignored.
+     */
     preset?: string;
     tokens?: Partial<ThemeTokens>;
 } | null | undefined;
 
 export type HostThemeConfig = {
+    /**
+     * @deprecated Theme presets were removed; there is one theme. Accepted
+     * and ignored.
+     */
     theme?: string;
     tokens?: Partial<ThemeTokens>;
     /**
@@ -23,39 +30,35 @@ export type HostThemeConfig = {
 } | null | undefined;
 
 export type ResolvedDemoTheme = {
+    /** Always `"default"`: the value Demo.Root emits as `data-demo-theme`. */
     themeId: string;
-    preset?: DemoThemePreset;
     tokens: ThemeTokens;
+    /** The theme's CSS, scoped to `[data-demo-theme="default"]`. */
     css: string;
 };
 
+/**
+ * The theme's tokens and CSS. Tokens cascade: the theme's defaults, then
+ * host tokens, then the demo's `theme.tokens`. A preset named by the demo or
+ * the host is ignored.
+ */
 export function resolveDemoTheme({
     demoTheme,
     host,
-    fallbackThemeId = DEFAULT_DEMO_THEME_ID,
 }: {
     demoTheme?: DemoThemeConfig;
     host?: HostThemeConfig;
+    /** @deprecated Theme presets were removed; ignored. */
     fallbackThemeId?: string;
 } = {}): ResolvedDemoTheme {
-    const requestedThemeId =
-        demoTheme?.preset ?? host?.theme ?? fallbackThemeId;
-    const themeId = demoThemePresetsById[requestedThemeId]
-        ? requestedThemeId
-        : fallbackThemeId;
-    const preset =
-        demoThemePresetsById[themeId] ??
-        demoThemePresetsById[DEFAULT_DEMO_THEME_ID];
-
     return {
-        themeId: preset?.id ?? themeId,
-        preset,
+        themeId: DEFAULT_DEMO_THEME_ID,
         tokens: {
-            ...(preset?.theme ?? {}),
+            ...demoThemeDefaultTokens,
             ...(host?.tokens ?? {}),
             ...(demoTheme?.tokens ?? {}),
         },
-        css: preset?.css ?? "",
+        css: demoThemeCss,
     };
 }
 
