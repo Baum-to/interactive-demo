@@ -28,32 +28,54 @@ The editor ships prebuilt inside the CLI package. If you are working in a
 clone and see a 503 telling you the editor is not built, run `npm run build`
 at the repo root.
 
-## The three panes
+## The layout
 
-- **Left — the step strip.** Every step as a thumbnail, numbered, with a dot
-  in the corner when it carries messages. Drag a thumbnail by its footer
-  handle to reorder. The `+` between thumbnails inserts a step there; the
-  `…` menu on a thumbnail opens step settings, duplicates it, or deletes it
-  (a demo has to keep at least one step).
-- **Middle — the stage.** The real player, running the demo you are
-  editing, with drag handles on top. Click an annotation to select it; drag
-  it to move it; drag the corner handles of an area or blur box to resize
-  it. The player keeps working — you can click through the demo as a viewer
-  would, and the strip follows along.
-- **Right — the inspector.** Whatever is selected: an annotation, a cover's
-  widget, the step, or the demo.
+- **Header.** The Back arrow, the Inkly logo, the demo's title, the save
+  badge, **Open demo** (the demo's page, in a new tab) and **Share**. Back
+  returns to the page you opened the editor from when that page is on the
+  same host; otherwise it goes to `/`, `dev`'s demo index. A host can point
+  both links elsewhere (see [Host capabilities](#host-capabilities)).
+- **Left — the stage.** The real player, running the demo you are editing,
+  with drag handles on top. Click an annotation to select it; drag it to
+  move it; drag the corner handles of an area or blur box to resize it. The
+  player keeps working — you can click through the demo as a viewer would,
+  and the strip follows along.
+- **Right — the sidebar.** By default it shows the step strip: every step as
+  a thumbnail, numbered, with a dot in the corner when it carries messages.
+  Drag a thumbnail by its footer handle to reorder. The `+` between
+  thumbnails inserts a step there; the `…` menu on a thumbnail opens step
+  settings, duplicates it, or deletes it (a demo has to keep at least one
+  step). Selecting an annotation or a cover, or opening demo settings, step
+  settings or the voiceover panel, swaps the strip for that inspector, with
+  a **Steps** breadcrumb at the top to go back.
 
-The toolbar under the stage adds things to the current step: **Message**
-(the four variants — cursor, pointer, callout, area), **Annotate** (a blur
-box or a text overlay), **Zoom**, media, and **Voiceover**. Each button
-carries a small count of what the step already has.
+The toolbar under the stage works on the current step:
+
+- **Message** — add one of the four variants: cursor, pointer, callout or
+  area.
+- **Annotate** — add a blur box, a text overlay, or a zoom.
+- **Narration** — open the voiceover panel.
+- **Settings** — demo settings, step settings, and **Edit Step Asset**
+  (the crop dialog for an image step, trim for a video step).
+
+Message and Annotate carry a small count of what the step already has. On a
+cover step they are disabled: covers take no annotations. On a video step
+the toolbar also holds a scrubber for the clip.
 
 ## What you can change
 
 **Steps.** Add a content step from an image or video, or a cover step
-(headline, form or embed). Reorder, duplicate, delete, and give each one a
-step name. Step settings also swap the step's media and open the crop and
-alignment dialog for it.
+(headline, form or embed). When the demo doesn't start or end on a cover,
+the strip also offers **Add intro step** (a headline cover) and **Add outro
+step** (a closing cover with a Replay button). Reorder, duplicate, delete,
+and give each one a step name. Step settings also swap the step's media and
+open the same dialog as Edit Step Asset. A step added in the editor gets
+`advance.trigger: "auto"` for a content step and `"click"` for a cover.
+
+**Video trim.** Edit Step Asset on a video step opens a trim dialog. Pick the
+start and end, and the browser re-records that range into a new video file
+(with a poster frame) under `assets/`; the step switches to it and the
+original file stays where it was.
 
 **Messages.** Text is written in a small rich-text box and stored as
 markdown. The inspector holds the variant, the anchor side (or `auto`),
@@ -70,11 +92,13 @@ again.
 
 **Voiceover.** One panel lists every step's narration. Write the script for
 a step, then either record audio from your microphone — it is uploaded into
-the demo's `assets/` and attached to the step — or pick an audio file
-that is already there. The script box seeds itself from the step's first
-message when it is empty. Generating the audio from the script is a host
-feature: `dev` doesn't offer it, so locally the panel has Record and Asset
-only (see [Host capabilities](#host-capabilities)).
+the demo's `assets/` and attached to the step — or open the audio picker to
+choose a file that is already there or upload a new one. The script box
+seeds itself from the step's first message when it is empty. **Remove**
+detaches the audio and clears the step's captions with it. Generating the
+audio from the script is a host feature, offered only when the host lists
+voices: `dev` doesn't, so locally the panel has Record and Asset only (see
+[Host capabilities](#host-capabilities)).
 
 **Cover widgets.** A cover holds one widget. The inspector switches between
 headline, form and embed, and edits their fields: title, description,
@@ -85,7 +109,10 @@ image, buttons and where each button goes. A `custom` widget is left alone
 player header, the "Built with Inkly" badge, the player controls
 (full / minimal / hidden), the primary colour, the canvas background behind
 the player (theme default, a solid colour, a gradient or an image, with a
-blur), and the header logo and its link.
+blur), and the header logo and its link. That logo is the demo's own
+`theme.brand`, drawn in the player's header; the project `brand` in
+`interactive-demo.json`, drawn in the page bar around the player, is edited
+in that file (see [authoring.md](authoring.md#brand-and-the-page-header)).
 
 **Assets.** Any media picker in the editor opens the same dialog: the files
 already under the demo's `assets/`, searchable, plus a drop zone to add a
@@ -97,10 +124,13 @@ unaffected. Removing a file is a file-system job: delete it from
 `assets/` yourself, and check with `interactive-demo validate` that nothing
 still references it.
 
-Two things the editor deliberately leaves to the file: chapters, and
-`custom` widgets. Deleting a step still keeps chapters honest — the step id
-is removed from every chapter, a chapter left empty is dropped, and any
-button that pointed at the deleted step or chapter is retargeted.
+What the editor leaves to the file: chapters; captions (apart from the ones
+Generate writes); a step's `duration` and `advance.trigger`;
+`chrome.autoplay`; `aspectRatio`; the theme preset and the `secondary`,
+`font` and `radius` tokens; and `custom` widgets. Deleting a step still
+keeps chapters honest — the step id is removed from every chapter, a
+chapter left empty is dropped, and any button that pointed at the deleted
+step or chapter is retargeted.
 
 ## Edits go straight to disk
 
@@ -153,20 +183,24 @@ byte for byte.
 
 ## The Share dialog
 
-**Share** in the header opens a four-pane dialog. It shows you commands and
-snippets; it never uploads or deploys anything.
+**Share** in the header opens a dialog with a rail on the left, grouped by
+how the demo will be used. It shows you commands and snippets; it never
+uploads or deploys anything.
 
-- **Share** — the two commands that publish a demo and get a link, and a
-  field to paste that link into.
-- **Inline embed** — the iframe snippet, sized to this demo's own aspect
-  ratio and player header, built by the same code
-  `interactive-demo embed` uses. It stays locked until you paste a link,
-  because a snippet pointing at a placeholder host is worse than no
-  snippet.
-- **Popup embed** — the loader script plus a trigger for HTML, React,
-  Next.js, Vue or Svelte, with the button label editable.
-- **React component** — the one-liner for rendering the player in your own
-  React tree.
+- **Send the link** — three steps: `interactive-demo login`, then
+  `interactive-demo publish <slug>`, then paste the link it printed. A link
+  to a `dist/` you deployed yourself works just as well.
+- **Frame the page**
+  - **Inline** — the iframe snippet, sized to this demo's own aspect ratio
+    and player header, built by the same code `interactive-demo embed`
+    uses.
+  - **Pop-up** — the loader script plus a trigger for HTML, React,
+    Next.js, Vue or Svelte, with the button label editable.
+
+  Both stay locked until you paste a link, because a snippet pointing at a
+  placeholder host is worse than no snippet.
+- **In your React app** — **Component**: the snippet for rendering the
+  player, or a `DemoModal` pop-up, in your own React tree.
 
 The embedding guide has the longer version of all of these:
 [embedding.md](embedding.md).

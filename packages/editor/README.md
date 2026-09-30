@@ -6,10 +6,11 @@ package and is not published on its own.
 
 ## What it does
 
-- Slide strip, stage and inspectors for `demo.config.json`: add image or
+- Stage, step strip and inspectors for `demo.config.json`: add image or
   video steps, place and style hotspots, blur and text overlays, zoom
-  regions, cover screens, captions and voiceover (record or upload, or
-  generate from the script when the host offers text-to-speech).
+  regions, cover screens, and voiceover (record it, pick or upload an audio
+  file, or generate it from the script when the host offers text-to-speech,
+  which also writes the step's captions).
 - Every edit is written straight back to the demo folder through the dev
   server's JSON API, debounced. There is no draft or publish step.
 
@@ -36,7 +37,9 @@ Then start the editor with hot reload in another:
 npm run dev -w @inkly-org/interactive-demo-editor
 ```
 
-Vite proxies the JSON API and demo assets to the dev server.
+The Vite server (port 5175) proxies `/__demo/editor/demos`,
+`/__demo/editor/capabilities`, `/__demo/demos`, `/__demo/player.js` and
+`/__demo/player.css` to the dev server on port 3000.
 
 ## API it depends on
 
@@ -44,11 +47,12 @@ All under `/__demo/editor/demos/<slug>/`, provided by `packages/cli/src/dev/edit
 
 | method | path | purpose |
 |---|---|---|
-| GET | `files` | text files of the demo (`demo.config.json`, `assets.json`) |
+| GET | `files` | the demo's text files (`demo.config.json`, …); binary files by path only |
 | PUT | `files` | write or delete files |
-| GET | `assets` | manifest entries with a URL this server serves |
-| POST | `assets?name=<file>[&kind=…]` | upload bytes to `assets/<file>` and register them |
-| DELETE | `assets?name=<file>` | remove an asset and its manifest entry |
+| GET | `assets` | every file directly under `assets/`, with a URL this server serves |
+| POST | `assets?name=<file>[&kind=…]` | write the request body to `assets/<file>`; different bytes under a taken name land as `<name>-2.<ext>` |
+| DELETE | `assets?name=<file>` | remove `assets/<file>` |
+| GET | `embed` | the iframe and pop-up snippets the Share dialog shows |
 
 `GET /__demo/demos` lists the project's demos for the picker.
 
