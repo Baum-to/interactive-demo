@@ -2,7 +2,13 @@ import { ExternalLinkIcon, Share2Icon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
-import { getDemoFiles, listDemoAssets, putDemoFiles } from "@/api";
+import {
+    getDemoFiles,
+    getHostCapabilities,
+    listDemoAssets,
+    putDemoFiles,
+    type HostCapabilities,
+} from "@/api";
 import { CONFIG_PATH, parseDemoConfig } from "@/components/demo-editor/codec";
 import { DemoEditorView } from "@/components/demo-editor/view";
 import { lineDiff } from "@/components/preview-client/helpers";
@@ -59,6 +65,19 @@ export function EditorShell({ slug }: { slug: string }) {
         "idle" | "saving" | "saved" | "error"
     >("idle");
     const [shareOpen, setShareOpen] = useState(false);
+    // Optional features of the host serving the editor (e.g. text-to-speech
+    // voiceovers). Fetched once per editor session; never fails — anything
+    // but a valid answer means "none", which is what the CLI offers.
+    const [hostCapabilities, setHostCapabilities] = useState<HostCapabilities>({});
+    useEffect(() => {
+        let cancelled = false;
+        void getHostCapabilities().then((caps) => {
+            if (!cancelled) setHostCapabilities(caps);
+        });
+        return () => {
+            cancelled = true;
+        };
+    }, []);
 
     useEffect(() => {
         filesRef.current = files ?? {};
@@ -342,6 +361,7 @@ export function EditorShell({ slug }: { slug: string }) {
                         slug={slug}
                         assets={assets}
                         onAssetsChanged={refetchAssets}
+                        hostCapabilities={hostCapabilities}
                     />
                 ) : (
                     <div className="p-6 text-sm text-muted-foreground">Loading…</div>

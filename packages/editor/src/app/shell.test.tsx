@@ -6,6 +6,7 @@ const api = vi.hoisted(() => ({
     listDemoAssets: vi.fn(),
     putDemoFiles: vi.fn(),
     getDemoEmbed: vi.fn(),
+    getHostCapabilities: vi.fn(async () => ({})),
 }));
 const toast = vi.hoisted(() => ({ error: vi.fn() }));
 vi.mock("@/api", () => api);

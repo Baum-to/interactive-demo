@@ -36,6 +36,7 @@ export default defineConfig({
     // and proxy the JSON API + demo assets to it.
     proxy: {
       '/__demo/editor/demos': 'http://127.0.0.1:3000',
+      '/__demo/editor/capabilities': 'http://127.0.0.1:3000',
       '/__demo/demos': 'http://127.0.0.1:3000',
       '/__demo/player.js': 'http://127.0.0.1:3000',
       '/__demo/player.css': 'http://127.0.0.1:3000',

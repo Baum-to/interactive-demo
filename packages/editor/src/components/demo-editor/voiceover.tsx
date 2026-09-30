@@ -1,22 +1,29 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
+    AudioLinesIcon,
+    CheckIcon,
     ChevronDownIcon,
     FolderOpenIcon,
-    Mic2Icon,
+    Loader2Icon,
     MicIcon,
     MicOffIcon,
     PauseIcon,
     PlayIcon,
+    RefreshCwIcon,
     SquareIcon,
     Trash2Icon,
     Volume2Icon,
     VolumeXIcon,
 } from "lucide-react";
 import type { Step } from "@inkly-org/interactive-demo";
+import { generateVoiceover, type HostCapabilities, type HostVoice } from "@/api";
 import { Button } from "@/components/ui/button";
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { SimpleTooltip } from "@/components/ui/tooltip";
-import { ToolbarCountPill } from "@/components/demo-editor/toolbar-count-pill";
 import { type AssetMeta } from "@/lib/assets";
 import { putDemoAssetBlob } from "@/lib/assets/client-demo-upload";
 import { isAudioAsset } from "./media-measure";
@@ -25,6 +32,34 @@ import {
     type MediaPickResult,
     type MediaUploader,
 } from "./inspectors";
+
+/**
+ * Host voices collapsed into country groups, in the order each country
+ * first appears. Drives the country headers in the voice dropdown.
+ */
+export function groupVoicesByCountry(
+    voices: ReadonlyArray<HostVoice>,
+): Array<{ country: string; voices: HostVoice[] }> {
+    const groups: Array<{ country: string; voices: HostVoice[] }> = [];
+    for (const voice of voices) {
+        const group = groups.find((g) => g.country === voice.country);
+        if (group) group.voices.push(voice);
+        else groups.push({ country: voice.country, voices: [voice] });
+    }
+    return groups;
+}
+
+/**
+ * Even split of `text` into sentence-like chunks. Mirrors what the TTS
+ * route returns, used as a fallback when we only have a URL.
+ */
+export function splitSentencesClient(text: string): string[] {
+    const matches = text.match(/[^.!?…\n]+[.!?…]?[\s]*/g);
+    const chunks = (matches ?? [text])
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0);
+    return chunks.length > 0 ? chunks : [text.trim()];
+}
 
 /**
  * Read the duration of an audio file in seconds via a hidden `<audio>`
@@ -184,73 +219,6 @@ function AudioPreview({
 }
 
 /**
- * Footer trigger for the active step's voiceover. Opening it no longer
- * pops a modal — it swaps the right sidebar over to {@link VoiceoverInspector}
- * (same pattern as the step / cover settings panels). The icon turns
- * accent-colored, with a count pill, once the step has a voiceover attached.
- */
-export function VoiceoverButton({
-    step,
-    onOpen,
-    compact,
-}: {
-    step: Step;
-    onOpen: () => void;
-    /** Hide the label — icon-only. Used on video steps where the
-     *  scrubber needs the horizontal room. */
-    compact?: boolean;
-}) {
-    const voiceover = step.voiceover;
-    const count = voiceover ? 1 : 0;
-    const icon = (
-        <span className="relative inline-grid size-4 place-items-center">
-            <Mic2Icon
-                className={cn(
-                    "size-3.5",
-                    voiceover && "text-[color:var(--accent)]",
-                )}
-            />
-            <ToolbarCountPill count={count} />
-        </span>
-    );
-
-    if (compact) {
-        return (
-            <SimpleTooltip
-                content={voiceover ? "Edit voiceover" : "Voiceover"}
-                side="top"
-            >
-                <Button
-                    type="button"
-                    variant="ghost"
-                    size="default"
-                    className="hover:bg-[color:var(--sidebar)]"
-                    onClick={onOpen}
-                >
-                    {icon}
-                </Button>
-            </SimpleTooltip>
-        );
-    }
-
-    return (
-        <Button
-            type="button"
-            variant="ghost"
-            size="default"
-            className="hover:bg-[color:var(--sidebar)]"
-            onClick={onOpen}
-            title={
-                voiceover ? "Edit voiceover" : "Add a voiceover for this step"
-            }
-        >
-            {icon}
-            <span className="hidden lg:inline">Voiceover</span>
-        </Button>
-    );
-}
-
-/**
  * Strip Markdown formatting to plain text. Message copy can carry markdown
  * (e.g. AI Polish emits a `**bold title**`), but narration is read aloud and
  * pasted as plain text, so the syntax characters must go. Line breaks are
@@ -288,9 +256,32 @@ export function messageTextForStep(step: Step): string {
 }
 
 /**
+ * Distribute `durationMs` across `sentences`, proportional to char
+ * length. Returns `Caption[]`-shaped objects with millisecond timing —
+ * matches the schema the player resolves against the audio clock when
+ * the step has a voiceover.
+ */
+export function buildCaptionCues(
+    stepId: string,
+    sentences: ReadonlyArray<string>,
+    durationMs: number,
+): Array<{ id: string; start: number; end: number; text: string }> {
+    const total = sentences.reduce((n, s) => n + Math.max(1, s.length), 0);
+    let cursor = 0;
+    return sentences.map((text, i) => {
+        const share = (Math.max(1, text.length) / total) * durationMs;
+        const start = cursor;
+        const end = cursor + share;
+        cursor = end;
+        return { id: `${stepId}_c${i + 1}`, start, end, text };
+    });
+}
+
+/**
  * Inline microphone recorder for a single step. Captures audio via
- * MediaRecorder, uploads it to the demo's assets, and hands the parent an
- * `asset:<id>` src (+ probed duration + the served url for instant playback).
+ * MediaRecorder, uploads it to the demo's assets, and hands the parent the
+ * asset's demo-relative path (+ probed duration + the served url for instant
+ * playback).
  * Self-contained so its recorder state resets whenever the parent unmounts
  * it (e.g. switching steps or closing the recorder).
  */
@@ -577,15 +568,18 @@ function formatAudioTime(seconds: number): string {
 /**
  * Sidebar panel that lists every step's narration in one place. Authors
  * write/edit a per-step script (persisted on `step.script`) and attach a
- * voiceover per step three ways: generate it from the script with the voice
- * picked at the top, record one from the mic, or reuse an audio asset.
+ * voiceover per step by recording one from the mic or reusing an audio
+ * asset. When the host serving the editor offers text-to-speech
+ * (`voiceover` in its capabilities), a voice picker appears at the top and
+ * each step can also generate its voiceover from the script; the CLI's
+ * `dev` server offers none, so locally the panel is Record · Asset only.
  * Each step is a collapsible card; the step the panel was opened from
  * expands by default, and — opened from the toolbar on a fresh step — its
  * script is seeded once from the step's on-screen message text.
  *
- * Generated/attached audio is stored as an `asset:<id>` uri so it resolves
- * through the same host resolver as image/video assets, in both the editor
- * preview and the runtime player.
+ * Recorded, generated and attached audio is stored by its demo-relative
+ * path (`assets/<file>`), like image and video media, so it resolves the
+ * same way in the editor preview and the runtime player.
  */
 export function VoiceoverInspector({
     steps,
@@ -597,6 +591,7 @@ export function VoiceoverInspector({
     onAssetsChanged,
     onAssetUploaded,
     resolveAudioSrc,
+    voiceoverCapability,
 }: {
     steps: ReadonlyArray<Step>;
     /** Step to auto-expand + seed when the panel opens. */
@@ -610,7 +605,24 @@ export function VoiceoverInspector({
     /** Resolve a stored voiceover uri (`asset:<id>` | path) to a playable
      *  URL for the inline `<audio>` preview. */
     resolveAudioSrc: (src: string) => string;
+    /** The host's text-to-speech offer. Absent → no picker, no Generate. */
+    voiceoverCapability?: HostCapabilities["voiceover"];
 }) {
+    const voices = useMemo(
+        () => voiceoverCapability?.voices ?? [],
+        [voiceoverCapability],
+    );
+    const canGenerate = voices.length > 0;
+    const voiceGroups = useMemo(() => groupVoicesByCountry(voices), [voices]);
+    // Shared voice for every generation in this panel. `null` → the host's
+    // default voice (else its first).
+    const [genVoice, setGenVoice] = useState<string | null>(null);
+    const [voiceMenuOpen, setVoiceMenuOpen] = useState(false);
+    const selectedVoice: HostVoice | undefined =
+        voices.find((v) => v.id === genVoice) ??
+        voices.find((v) => v.isDefault) ??
+        voices[0];
+
     // Which step card is expanded (null = all collapsed).
     const initialExpandedId = selectedStepId ?? steps[0]?.id ?? null;
     const [expandedId, setExpandedId] = useState<string | null>(
@@ -664,12 +676,19 @@ export function VoiceoverInspector({
             return seed ? { ...m, [step.id]: seed } : m;
         });
     };
+    // Per-step generation flags + errors, keyed by step id.
+    const [pending, setPending] = useState<Record<string, boolean>>({});
+    const [errors, setErrors] = useState<Record<string, string | null>>({});
     // Served urls for audio attached this session, so the inline player
     // works before the refreshed asset manifest lands. Keyed by stored src.
     const [localUrls, setLocalUrls] = useState<Record<string, string>>({});
 
-    // Attached-voiceover playback. A hidden <audio> drives the per-step
-    // preview button; `playingAttachedId` is the step playing now.
+    // Voice-sample playback. One shared hidden <audio>; `previewVoiceId`
+    // marks which row should show the pause icon.
+    const previewAudioRef = useRef<HTMLAudioElement | null>(null);
+    const [previewVoiceId, setPreviewVoiceId] = useState<string | null>(null);
+    // Attached-voiceover playback. A separate hidden <audio> drives the
+    // per-step preview button; `playingAttachedId` is the step playing now.
     const attachedAudioRef = useRef<HTMLAudioElement | null>(null);
     const [playingAttachedId, setPlayingAttachedId] = useState<string | null>(
         null,
@@ -677,10 +696,28 @@ export function VoiceoverInspector({
 
     useEffect(() => {
         const attached = attachedAudioRef.current;
+        const preview = previewAudioRef.current;
         return () => {
             attached?.pause();
+            preview?.pause();
         };
     }, []);
+
+    const togglePreview = (voice: HostVoice) => {
+        const el = previewAudioRef.current;
+        if (!el) return;
+        if (previewVoiceId === voice.id) {
+            el.pause();
+            setPreviewVoiceId(null);
+            return;
+        }
+        el.src = voice.previewUrl;
+        el.currentTime = 0;
+        void el
+            .play()
+            .then(() => setPreviewVoiceId(voice.id))
+            .catch(() => setPreviewVoiceId(null));
+    };
 
     const audioAssets = assets.filter(isAudioAsset);
 
@@ -769,14 +806,208 @@ export function VoiceoverInspector({
         onUpdateStep(step.id, { voiceover: { src, duration: durationMs } });
     };
 
+    const generate = async (step: Step) => {
+        if (!selectedVoice) return;
+        const text = scriptValue(step).trim();
+        if (!text) {
+            setErrors((e) => ({
+                ...e,
+                [step.id]: "Add voiceover text to generate.",
+            }));
+            return;
+        }
+        const maxChars = voiceoverCapability?.maxChars ?? Infinity;
+        if (text.length > maxChars) {
+            setErrors((e) => ({
+                ...e,
+                [step.id]: `Voiceover text is ${text.length} characters; the limit for generating is ${maxChars}.`,
+            }));
+            return;
+        }
+        // Persist the script first so a reload keeps the text even if the
+        // synthesis call fails midway.
+        commitScript(step);
+        setPending((p) => ({ ...p, [step.id]: true }));
+        setErrors((e) => ({ ...e, [step.id]: null }));
+        try {
+            const data = await generateVoiceover(slug, {
+                stepId: step.id,
+                text,
+                voiceId: selectedVoice.id,
+            });
+            const asset = data?.asset;
+            if (!asset?.path) {
+                throw new Error("Generated voiceover did not return a file path.");
+            }
+            const src = asset.path;
+            const publicUrl = asset.publicUrl;
+            if (publicUrl) {
+                setLocalUrls((m) => ({ ...m, [src]: publicUrl }));
+            }
+            onAssetUploaded?.(asset);
+            const sentences =
+                Array.isArray(data.sentences) && data.sentences.length > 0
+                    ? data.sentences
+                    : splitSentencesClient(text);
+            // Probe duration off the served url so caption cues land on the
+            // real clock; fall back to a char-length estimate (~13 chars/sec).
+            const probedSec = publicUrl
+                ? await probeAudioDuration(publicUrl)
+                : null;
+            const durationMs =
+                (probedSec ??
+                    Math.max(
+                        1,
+                        sentences.reduce((n, s) => n + s.length, 0) / 13,
+                    )) * 1000;
+            const captions = buildCaptionCues(step.id, sentences, durationMs);
+            // Only content steps carry captions; a cover step would just
+            // keep a key the player never reads.
+            onUpdateStep(step.id, {
+                voiceover: { src, duration: durationMs },
+                ...(step.kind === "content" ? { captions } : {}),
+            });
+            onAssetsChanged();
+        } catch (err) {
+            setErrors((e) => ({
+                ...e,
+                [step.id]:
+                    err instanceof Error
+                        ? err.message
+                        : "Unexpected error generating voiceover.",
+            }));
+        } finally {
+            setPending((p) => ({ ...p, [step.id]: false }));
+        }
+    };
+
     return (
         <div className="space-y-3">
-            {/* Shared, hidden player for the attached voiceover. */}
+            {/* Shared, hidden players: voice samples + attached voiceover. */}
+            <audio
+                ref={previewAudioRef}
+                onEnded={() => setPreviewVoiceId(null)}
+                className="hidden"
+            />
             <audio
                 ref={attachedAudioRef}
                 onEnded={() => setPlayingAttachedId(null)}
                 className="hidden"
             />
+
+            {/* Shared voice picker — only when the host offers generation. */}
+            {canGenerate && selectedVoice ? (
+            <div className="space-y-1.5">
+                <label className="block text-[11px] font-medium text-[color:var(--ink-2)]">
+                    Voice
+                </label>
+                <Popover open={voiceMenuOpen} onOpenChange={setVoiceMenuOpen}>
+                    <PopoverTrigger className="flex w-full items-center gap-2 rounded-md border border-[color:var(--line)] bg-[color:var(--surface)] px-2 py-1.5 text-left focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+                        <span className="flex min-w-0 flex-1 flex-col">
+                            <span className="truncate text-[12px] text-[color:var(--ink-strong)]">
+                                {selectedVoice.name}
+                                {selectedVoice.isDefault ? " · default" : ""}
+                            </span>
+                            <span className="truncate text-[11px] text-muted-foreground">
+                                {[selectedVoice.country, selectedVoice.descriptor]
+                                    .filter(Boolean)
+                                    .join(" · ")}
+                            </span>
+                        </span>
+                        <ChevronDownIcon className="size-3.5 shrink-0 opacity-70" />
+                    </PopoverTrigger>
+                    <PopoverContent
+                        align="start"
+                        sideOffset={6}
+                        className="max-h-[300px] w-(--anchor-width) min-w-56 overflow-y-auto p-0"
+                    >
+                        {voiceGroups.map((group) => (
+                            <div key={group.country || "_"}>
+                                {group.country ? (
+                                    <div className="sticky top-0 z-10 flex items-center gap-1.5 bg-[color:var(--surface-2)] px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                                        {group.country}
+                                    </div>
+                                ) : null}
+                                <ul>
+                                    {group.voices.map((v) => {
+                                        const selected = selectedVoice.id === v.id;
+                                        const playing = previewVoiceId === v.id;
+                                        return (
+                                            <li
+                                                key={v.id}
+                                                className={cn(
+                                                    "flex items-center gap-2 px-2 py-1.5",
+                                                    selected &&
+                                                        "bg-[color:var(--surface-2)]",
+                                                )}
+                                            >
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setGenVoice(v.id);
+                                                        setVoiceMenuOpen(false);
+                                                    }}
+                                                    className="flex min-w-0 flex-1 cursor-pointer items-center gap-2 text-left"
+                                                    aria-pressed={selected}
+                                                >
+                                                    <span className="flex min-w-0 flex-col">
+                                                        <span className="truncate text-[12px] text-[color:var(--ink-strong)]">
+                                                            {v.name}
+                                                            {v.isDefault
+                                                                ? " · default"
+                                                                : ""}
+                                                        </span>
+                                                        <span className="truncate text-[11px] text-muted-foreground">
+                                                            {v.descriptor}
+                                                        </span>
+                                                    </span>
+                                                    <span
+                                                        className={cn(
+                                                            "flex size-4 shrink-0 items-center justify-center",
+                                                            !selected &&
+                                                                "opacity-0",
+                                                        )}
+                                                    >
+                                                        <CheckIcon className="size-3.5 text-[color:var(--accent)]" />
+                                                    </span>
+                                                </button>
+                                                {v.previewUrl ? (
+                                                <Button
+                                                    type="button"
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="size-7 shrink-0"
+                                                    onClick={() =>
+                                                        togglePreview(v)
+                                                    }
+                                                    aria-label={
+                                                        playing
+                                                            ? `Stop preview of ${v.name}`
+                                                            : `Preview ${v.name}`
+                                                    }
+                                                    title={
+                                                        playing
+                                                            ? "Stop preview"
+                                                            : "Play sample"
+                                                    }
+                                                >
+                                                    {playing ? (
+                                                        <PauseIcon className="size-3.5" />
+                                                    ) : (
+                                                        <PlayIcon className="size-3.5" />
+                                                    )}
+                                                </Button>
+                                                ) : null}
+                                            </li>
+                                        );
+                                    })}
+                                </ul>
+                            </div>
+                        ))}
+                    </PopoverContent>
+                </Popover>
+            </div>
+            ) : null}
 
             {/* Per-step scripts. */}
             <div className="space-y-2">
@@ -788,6 +1019,8 @@ export function VoiceoverInspector({
                 {steps.map((step, i) => {
                     const expanded = expandedId === step.id;
                     const hasVoiceover = !!step.voiceover;
+                    const busy = !!pending[step.id];
+                    const err = errors[step.id] ?? null;
                     const draft = scriptValue(step);
                     const title = step.label
                         ? `Step ${i + 1} - ${step.label}`
@@ -902,13 +1135,38 @@ export function VoiceoverInspector({
                                                 placeholder="Type what the narrator should say…"
                                                 rows={3}
                                                 maxLength={500}
+                                                disabled={busy}
                                                 className="flex w-full min-h-[84px] rounded-md border border-[color:var(--line)] bg-[color:var(--surface-2)] px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                                             />
 
-                                            {/* Action group — Record · Asset. Buttons (flat
-                                                variant) joined into one segmented group via
-                                                the container. */}
+                                            {/* Action group — [Generate ·] Record · Asset.
+                                                Buttons (flat variant) joined into one segmented
+                                                group via the container. Generate only when the
+                                                host offers text-to-speech. */}
                                             <div className="flex w-full divide-x divide-[color:var(--line)] overflow-hidden rounded-lg border border-[color:var(--line)]">
+                                                {canGenerate ? (
+                                                <Button
+                                                    type="button"
+                                                    variant="flat"
+                                                    size="sm"
+                                                    onClick={() =>
+                                                        void generate(step)
+                                                    }
+                                                    disabled={
+                                                        busy || !draft.trim()
+                                                    }
+                                                    className="flex-1 rounded-none border-0 text-[color:var(--accent)] shadow-none"
+                                                >
+                                                    {busy ? (
+                                                        <Loader2Icon className="animate-spin" />
+                                                    ) : hasVoiceover ? (
+                                                        <RefreshCwIcon />
+                                                    ) : (
+                                                        <AudioLinesIcon />
+                                                    )}
+                                                    Generate
+                                                </Button>
+                                                ) : null}
                                                 <Button
                                                     type="button"
                                                     variant="flat"
@@ -916,6 +1174,7 @@ export function VoiceoverInspector({
                                                     onClick={() =>
                                                         setView(step.id, "record")
                                                     }
+                                                    disabled={busy}
                                                     className="flex-1 rounded-none border-0 shadow-none"
                                                 >
                                                     <MicIcon />
@@ -930,12 +1189,18 @@ export function VoiceoverInspector({
                                                             step.id,
                                                         )
                                                     }
+                                                    disabled={busy}
                                                     className="flex-1 rounded-none border-0 shadow-none"
                                                 >
                                                     <FolderOpenIcon />
                                                     Asset
                                                 </Button>
                                             </div>
+                                            {err ? (
+                                                <p className="text-[11px] text-destructive">
+                                                    {err}
+                                                </p>
+                                            ) : null}
 
                                             {hasVoiceover && step.voiceover ? (
                                                 <div className="flex items-center gap-2 rounded-md border border-[color:var(--line-soft)] bg-[color:var(--surface-2)] px-2 py-1.5">

@@ -107,6 +107,7 @@ import {
     type ZoomMode,
 } from "@/components/demo-editor/context";
 import { VoiceoverInspector } from "@/components/demo-editor/voiceover";
+import type { HostCapabilities } from "@/api";
 import {
     DemoSettingsInspector,
     SettingsMenuButton,
@@ -1034,6 +1035,7 @@ export function DemoEditorView({
     assets,
     onAssetsChanged,
     onAssetUploaded,
+    hostCapabilities,
 }: {
     files: Record<string, string>;
     onChange: (path: string, content: string) => void;
@@ -1041,6 +1043,8 @@ export function DemoEditorView({
     assets: ReadonlyArray<AssetMeta>;
     onAssetsChanged: () => void;
     onAssetUploaded?: (asset: AssetMeta) => void;
+    /** Optional features the host serving the editor offers. */
+    hostCapabilities?: HostCapabilities;
 }) {
     // Inspectors take a `demoId` for display-URL helpers; locally the slug
     // is the only identity a demo has.
@@ -2129,6 +2133,9 @@ export function DemoEditorView({
                                 onAssetsChanged={onAssetsChanged}
                                 onAssetUploaded={onAssetUploaded}
                                 resolveAudioSrc={resolveAudioSrc}
+                                voiceoverCapability={
+                                    hostCapabilities?.voiceover
+                                }
                             />
                         </div>
                     </>
