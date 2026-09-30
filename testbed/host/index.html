@@ -7,11 +7,11 @@
     <style>
       :root {
         --bg: #ffffff;
-        --soft: #f6f7fb;
-        --ink: #12141a;
-        --muted: #656b78;
-        --line: #e7e9ef;
-        --accent: #4f5bd5;
+        --soft: #f6f6f4;
+        --ink: #17151a;
+        --muted: #6f6c67;
+        --line: #e9e8e5;
+        --accent: #17151a;
       }
       * { box-sizing: border-box; }
       body {
@@ -34,7 +34,7 @@
       .brand { display: flex; align-items: center; gap: 10px; font-weight: 650; letter-spacing: -0.01em; }
       .brand .mark {
         width: 26px; height: 26px; border-radius: 8px; color: #fff; font-size: 13px; font-weight: 700;
-        background: linear-gradient(135deg, #5b6cff, #8a5cf6); display: grid; place-items: center;
+        background: var(--accent); display: grid; place-items: center;
       }
       header.site nav { display: flex; gap: 20px; margin-left: 12px; color: var(--muted); font-size: 14px; }
       header.site nav a { text-decoration: none; }
@@ -55,7 +55,7 @@
       .hero { padding: 62px 0 34px; text-align: center; }
       .eyebrow {
         display: inline-flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 600;
-        color: var(--accent); background: #eef0fd; border-radius: 99px; padding: 6px 12px; margin-bottom: 18px;
+        color: var(--accent); background: #efeeec; border-radius: 99px; padding: 6px 12px; margin-bottom: 18px;
       }
       .hero h1 {
         font-size: 44px; line-height: 1.1; letter-spacing: -0.035em; margin: 0 0 14px; font-weight: 700;
@@ -72,10 +72,10 @@
       .center { text-align: center; }
 
       /* testbed instrumentation, deliberately below the fold */
-      .instrument { border-top: 1px solid var(--line); background: #fbfbfd; padding-bottom: 70px; }
+      .instrument { border-top: 1px solid var(--line); background: #fbfbfa; padding-bottom: 70px; }
       .tag {
         display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
-        text-transform: uppercase; color: #8a90a0; margin-bottom: 10px;
+        text-transform: uppercase; color: #8c8882; margin-bottom: 10px;
       }
       .grid { display: grid; gap: 18px; grid-template-columns: 1fr 1fr; }
       @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
@@ -91,13 +91,13 @@
       .log .t { color: #7dd3fc; }
       ul.checks { margin: 10px 0 0; padding-left: 18px; color: var(--muted); font-size: 13.5px; }
       ul.checks li { margin-bottom: 6px; }
-      code { background: #eef0f5; padding: 1px 5px; border-radius: 5px; font-size: 12.5px; }
+      code { background: #f1f0ee; padding: 1px 5px; border-radius: 5px; font-size: 12.5px; }
       .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
       select, .ghost {
         font: inherit; font-size: 13px; border: 1px solid var(--line); border-radius: 8px;
         padding: 7px 10px; background: #fff; color: inherit; cursor: pointer;
       }
-      footer.site { padding: 26px 0 40px; color: #98a0ae; font-size: 13px; }
+      footer.site { padding: 26px 0 40px; color: #9b9892; font-size: 13px; }
     </style>
     <script>
       /* __TESTBED_DEMOS__ */
