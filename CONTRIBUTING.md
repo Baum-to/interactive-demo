@@ -16,14 +16,22 @@ There is no contributor license agreement.
 
 ## Checks
 
-Every pull request runs type-checking, linting and the test suite:
+Every pull request runs the build, type-checking, linting and the test suite.
+Run them in this order — the example projects and the testbed use the built
+CLI:
 
 ```sh
 npm install
+npm run build
 npm run typecheck
 npm run lint
 npm test
 ```
+
+CI then also checks that `docs/schema.md` matches the schema (regenerate it
+with `node scripts/docs-schema.mjs`), validates and builds both projects
+under `examples/` with the built CLI, and runs the browser-free testbed
+phases (`npm run testbed -- --only cli,dev,editor,build,host,failures`).
 
 Ported code keeps its existing formatting; do not reformat files you are not otherwise changing.
 
