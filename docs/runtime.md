@@ -92,6 +92,15 @@ controls mode, the badge, autoplay. See
 The player takes the arrow keys, space and `m`, but only after a click or a
 focus inside it, so a host page's own shortcuts keep working elsewhere.
 
+### Captions and voiceover
+
+A step's `voiceover` plays with the step, and its `captions` show over the
+stage, timed against the audio when there is some. Captions are on by
+default. In the full controls bar, a captions toggle appears on a step that
+has captions, and a mute button appears when any step in the demo has
+audio; the minimal bar shows mute on a step with a voiceover. `controls`
+drives both too (`toggleCaptions`, `toggleMute`, below).
+
 ### Where the media comes from
 
 A config references its media by a path relative to the demo folder
@@ -266,7 +275,9 @@ page.
 Two query parameters are read from the page URL:
 
 - `?autoplay=1` starts playback as soon as the player is ready.
-- `?render=1` is for an exporter driving the page. It implies autoplay.
+- `?render=1` also starts playback, and that is all it does today. It is
+  reserved for an exporter driving the page through `window.__demo`; there
+  is no separate render layout behind it.
 
 The player also applies the demo-level canvas background (`background` or
 `backgroundColor` in the config) to `#root`, and injects the active theme's
@@ -298,15 +309,25 @@ await new Promise((resolve) => {
 window.__demo.controls.seekToStep('s3');
 ```
 
-### Render modes
+### Embed mode
 
-The page the CLI writes reads `?embed=inline` and renders the player alone:
-no page bar, no canvas, transparent background, the player filling the
-frame. That is the page's own CSS, not `player.js`, so a page you assemble
-by hand from the four lines above gets the plain layout only.
+The page the CLI writes reads `?embed=inline` (or its alias `?embed=1`) and
+renders the player alone: no page bar, no canvas, transparent background,
+the player filling the frame. That is the page's own CSS, not `player.js`,
+so a page you assemble by hand from the four lines above gets the plain
+layout only.
 
-The same page posts `interactive-demo:close` to its parent on Escape and
-relays every runtime event as `interactive-demo:event`.
+When it is framed, the same page talks to its parent with `postMessage`:
+
+- `{ type: "interactive-demo:close" }` on Escape, which the pop-up loader
+  takes as a request to close.
+- `{ type: "interactive-demo:size", width, height }` in embed mode, with the
+  player's rendered size whenever it changes. The pop-up loader sizes its
+  frame to that ratio.
+- `{ type: "interactive-demo:event", event }` for every runtime event. This
+  relay is in `player.js`, not the page, so a hand-assembled page sends it
+  too.
+
 [embedding.md](embedding.md) has the iframe, its sizing, and the pop-up
 loader.
 

@@ -32,6 +32,16 @@ of note: `baseUrl`, `resolveAssetUrl` (a custom rule for relative media
 paths, e.g. a CDN), `themeId`, `themeTokens`, `onEvent` (step views,
 completion, CTA clicks, form submits), `layout` and `controls`.
 
+`DemoModal` opens the same player in a pop-up over your page, rendered
+in-process through a portal: `<DemoModal open={open} onClose={…}><Demo … /></DemoModal>`.
+
+A page that isn't React opens a demo page in a pop-up with the loader
+instead: `@inkly-org/interactive-demo/embed.js` (the CLI's `build` copies it
+to `dist/embed.js`) adds `InteractiveDemo.open(url)`.
+
+[docs/runtime.md](../../docs/runtime.md) has every prop, the events and the
+page contract.
+
 ## Use the self-contained player on a static page
 
 `player.js` bundles React and the player. A page mounts a demo with one
@@ -61,7 +71,7 @@ window.__demo = {
   ready: true,        // set when the player has parsed the config and mounted
   complete: false,    // flips to true when the last step finishes
   stepIds: string[],  // every step id, in order
-  controls,           // play(), pause(), next(), prev(), goToStep(id), …
+  controls,           // play(), pause(), next(), prev(), seekToStep(id), …
   demo,               // the validated config
 };
 ```
