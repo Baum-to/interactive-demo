@@ -181,11 +181,25 @@ export async function launch({ width = 1440, height = 900, scale = 2 } = {}) {
         };
       })()`);
     },
+    /** Move the mouse without clicking, so hover states show. */
+    async hover(x, y, settleMs = 0) {
+      await call('Input.dispatchMouseEvent', { type: 'mouseMoved', x, y }, sessionId);
+      if (settleMs) await sleep(settleMs);
+    },
     async shot(path) {
       const { data } = await call('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false }, sessionId);
       mkdirSync(dirname(path), { recursive: true });
       writeFileSync(path, Buffer.from(data, 'base64'));
       return path;
+    },
+    /** The viewport as a PNG buffer, encoded for speed — for filming frames. */
+    async frame() {
+      const { data } = await call(
+        'Page.captureScreenshot',
+        { format: 'png', captureBeyondViewport: false, optimizeForSpeed: true },
+        sessionId,
+      );
+      return Buffer.from(data, 'base64');
     },
     async close() {
       try {

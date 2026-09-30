@@ -82,6 +82,12 @@ Element positions land in `metrics.json` beside the screens; the hotspot
 coordinates in `demo.config.json` come from there. A re-shoot never touches the
 copy or the hotspots, so check they still land where they should afterwards.
 
+`node testbed/hero.mjs` (or `npm run hero`) then films the README's two
+animations from the re-shot self-demo — the built player stepping through it
+into `docs/images/demo.webp`, the editor clicked through its filmstrip into
+`docs/images/editor-anim.webp` (`--only demo` or `--only editor`, `--out <dir>`,
+`--frames <dir>` to keep the frames).
+
 ## The manual pass
 
 The automated run covers everything reachable over HTTP and the filesystem.
