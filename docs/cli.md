@@ -57,9 +57,12 @@ interactive-demo init --from <dir|zip>
 
 `init <name>` creates `<name>/` and writes `README.md`, `.gitignore`,
 `package.json`, `interactive-demo.json` and — unless you pass
-`--no-starter-demo` — `demos/getting-started/` with a three-step demo (an
-intro cover, one labelled content step on a placeholder PNG with a hotspot
-on it, an outro cover) and the placeholder in `assets/`. The generated
+`--no-starter-demo` — `demos/getting-started/` with a short tour and the
+placeholder it runs on in `assets/`. The placeholder is a wireframe of a
+generic web app, and the tour shows what a demo can carry, naming the editor
+menu each piece comes from: an intro cover, then three content steps — a
+recorded click, a callout beside an area, and a zoom with a blur and a text
+label — and an outro cover that points at `capture`. The generated
 `README.md` covers capturing a real demo, publishing it and hosting it
 yourself. It prints the next steps.
 

@@ -15,11 +15,11 @@ import { runInit } from '../src/commands/init';
 import { runPublish, runPublishList } from '../src/commands/publish';
 
 
-/** Point the starter demo's content step at a file under assets/. */
+/** Point every content step of the starter demo at a file under assets/. */
 async function pointStepAt(projectDir: string, path: string): Promise<string> {
   const configPath = join(projectDir, 'demos', 'getting-started', 'demo.config.json');
   const config = JSON.parse(await readFile(configPath, 'utf8'));
-  config.steps[1].background.src = path;
+  for (const step of config.steps) if (step.kind === 'content') step.background.src = path;
   const text = JSON.stringify(config, null, 2) + '\n';
   await writeFile(configPath, text, 'utf8');
   return text;

@@ -208,7 +208,8 @@ describe('publish against a fake hosting server', () => {
     await mkdir(join(demoDir, 'assets'), { recursive: true });
     await writeFile(join(demoDir, 'assets', `${sha256}.png`), bytes);
     const config = JSON.parse(await readFile(join(demoDir, 'demo.config.json'), 'utf8'));
-    config.steps[1].background.src = `assets/${sha256}.png`;
+    // Every content step: the starter's steps share the placeholder.
+    for (const step of config.steps) if (step.kind === 'content') step.background.src = `assets/${sha256}.png`;
     await writeFile(join(demoDir, 'demo.config.json'), JSON.stringify(config, null, 2) + '\n');
 
     const result = await runPublish({ cwd: init.dir, silent: true });
@@ -343,7 +344,8 @@ describe('publish against a fake hosting server', () => {
     await mkdir(join(demoDir, 'assets'), { recursive: true });
     await writeFile(join(demoDir, 'assets', 'Shot.PNG'), bytes);
     const config = JSON.parse(await readFile(join(demoDir, 'demo.config.json'), 'utf8'));
-    config.steps[1].background.src = 'assets/Shot.PNG';
+    // Every content step: the starter's steps share the placeholder.
+    for (const step of config.steps) if (step.kind === 'content') step.background.src = 'assets/Shot.PNG';
     await writeFile(join(demoDir, 'demo.config.json'), JSON.stringify(config, null, 2) + '\n');
 
     await runPublish({ cwd: init.dir, silent: true });
