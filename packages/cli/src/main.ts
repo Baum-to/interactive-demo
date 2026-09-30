@@ -20,7 +20,7 @@ Usage:
   ${BIN} init --demo <slug>          Add a demo to the current project.
   ${BIN} dev [<path>] [--port <n>]   Start the local preview + editor server.
   ${BIN} validate [--json] [--strict]
-                                     Validate the project and demo files.
+                                               Validate the project and demo files.
   ${BIN} build [--out <dir>]         Write a static folder per demo.
   ${BIN} capture <start|stop|…>      Record a click-through of a live web app.
   ${BIN} login [--token <token>]     Log in to the hosting service.
@@ -50,12 +50,12 @@ Options:
   --demo <slug>          Inside an existing project: add demos/<slug>/ with a
                          starter demo (an intro cover, one content step on a
                          placeholder screenshot, an outro cover).
-  --from <dir|zip>       Import an existing demo folder, or a .zip of one (as
-                         downloaded by the capture extension), instead of
-                         scaffolding. Without --demo the slug is taken from the
-                         source name. The folder must hold a demo.config.json;
-                         a demo.config.json) instead of scaffolding. Copies the
-                         folder as-is, minus node_modules/ and .git/.
+  --from <dir|zip>       Import an existing demo folder, or a capture .zip of
+                         one, instead of scaffolding. --demo defaults to the
+                         source's name (minus .zip). The folder must hold a
+                         demo.config.json; in a zip, the shallowest one marks
+                         the demo folder (the zip's root, or its single top
+                         folder). Copies it as-is, minus node_modules/ and .git/.
 `;
 
 const DEV_USAGE = `${BIN} dev — start the local preview server
@@ -72,6 +72,9 @@ Arguments:
 Options:
   --port <n>    Preferred port. Defaults to 3000; if taken, the CLI tries the
                 next available port. Must be 1-65535.
+
+The editor runs at /__demo/editor/ and saves edits straight to the demo
+files on disk.
 `;
 
 const VALIDATE_USAGE = `${BIN} validate — validate a project
@@ -91,12 +94,14 @@ Usage:
 
 Options:
   --out <dir>  Output folder, relative to the project root (default: dist).
---force      Overwrite the output folder even if this tool did not create
-             it. Building empties the folder first, so without this a
-             non-empty folder with no build marker is refused.
+  --force      Overwrite the output folder even if this tool did not create
+               it. Building empties the folder first, so without this a
+               non-empty folder with no build marker is refused.
 
-Each demo is written to <out>/<slug>/ as index.html + player.js + player.css
-+ assets/, ready to deploy as static files and embed with an iframe.
+Each demo is written to <out>/<slug>/: index.html, player.js, player.css,
+player-fonts.css with fonts/, backgrounds/, brand/ (when the project has a
+logo file) and assets/. The pop-up loader is written once, to <out>/embed.js.
+Deploy the folder to any static host; the build prints the embed snippets.
 `;
 
 const VERSION_USAGE = `${BIN} version — print the CLI version
@@ -109,7 +114,7 @@ Usage:
 const LOGIN_USAGE = `${BIN} login — log in to the hosting service
 
 Usage:
-  ${BIN} login [--token <token>] [--no-open] [--status] [--json]
+  ${BIN} login [--token <token>] [--no-open] [--local] [--status] [--json]
   ${BIN} logout
 
 Options:
@@ -177,8 +182,10 @@ Commands:
   validate   Validate the project and demo files.
   build      Write a static folder per demo.
   capture    Record a click-through of a live web app as a demo.
-  login      Log in to the hosting service (logout removes the credentials).
+  login      Log in to the hosting service.
+  logout     Remove the saved credentials.
   publish    Publish a demo to the hosting service.
+  embed      Print the embed snippet for a hosted demo.
   version    Print the CLI version.
 `;
 

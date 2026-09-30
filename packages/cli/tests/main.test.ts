@@ -50,6 +50,43 @@ describe('interactive-demo help', () => {
     expect(build.stdout).toContain('--out <dir>');
   });
 
+  it('lists every command in the help index, each with clean usage', async () => {
+    const index = await run(['help']);
+    const listed = [...index.stdout.split('Commands:\n')[1]!.matchAll(/^ {2}(\S+)/gm)].map((m) => m[1]!);
+    expect(listed).toEqual(
+      expect.arrayContaining(['init', 'dev', 'validate', 'build', 'capture', 'login', 'logout', 'publish', 'embed', 'version']),
+    );
+    const top = await run(['--help']);
+    for (const [topic, text] of [
+      ['--help', top.stdout],
+      ...(await Promise.all(
+        [...listed, 'help'].map(async (t) => [t, (await run(['help', t])).stdout] as const),
+      )),
+    ] as const) {
+      expect(text, topic).not.toBe('');
+      // A half-replaced sentence shows up as a repeated line, a flag that lost
+      // its indent, or a parenthesis opened or closed on its own.
+      const lines = text.split('\n').map((l) => l.trim()).filter(Boolean);
+      expect(lines.filter((l, i) => lines.indexOf(l) !== i), topic).toEqual([]);
+      expect(text.split('\n').filter((l) => l.startsWith('-')), topic).toEqual([]);
+      expect(text.split('(').length, topic).toBe(text.split(')').length);
+    }
+  });
+
+  it('describes the options each command actually takes', async () => {
+    const init = await run(['init', '--help']);
+    expect(init.stdout).toMatch(/--demo defaults to the\s+source's name/);
+    expect(init.stdout).not.toContain('capture extension');
+    expect(init.stdout).not.toContain('a demo.config.json) instead');
+    expect((await run(['dev', '--help'])).stdout).toContain('/__demo/editor/');
+    expect((await run(['login', '--help'])).stdout).toContain('[--local]');
+    const build = await run(['build', '--help']);
+    expect(build.stdout).toContain('  --force');
+    for (const written of ['player-fonts.css', 'fonts/', 'backgrounds/', 'brand/', '<out>/embed.js']) {
+      expect(build.stdout).toContain(written);
+    }
+  });
+
   it('rejects unknown commands and help topics', async () => {
     const unknown = await run(['frobnicate']);
     expect(unknown.code).toBe(1);
