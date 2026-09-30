@@ -8,7 +8,8 @@ package and is not published on its own.
 
 - Slide strip, stage and inspectors for `demo.config.json`: add image or
   video steps, place and style hotspots, blur and text overlays, zoom
-  regions, cover screens, captions and voiceover (record or upload).
+  regions, cover screens, captions and voiceover (record or upload, or
+  generate from the script when the host offers text-to-speech).
 - Every edit is written straight back to the demo folder through the dev
   server's JSON API, debounced. There is no draft or publish step.
 
@@ -50,3 +51,9 @@ All under `/__demo/editor/demos/<slug>/`, provided by `packages/cli/src/dev/edit
 | DELETE | `assets?name=<file>` | remove an asset and its manifest entry |
 
 `GET /__demo/demos` lists the project's demos for the picker.
+
+`GET /__demo/editor/capabilities` says which optional features the host
+offers; `dev` answers `{}`. A host that advertises `voiceover` must also
+serve `POST /__demo/editor/demos/<slug>/voiceover` (text-to-speech into a
+new audio asset); the CLI does not. Both are described in
+[docs/editor.md](../../docs/editor.md#host-capabilities).

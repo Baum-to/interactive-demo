@@ -72,7 +72,9 @@ again.
 a step, then either record audio from your microphone — it is uploaded into
 the demo's `assets/` and attached to the step — or pick an audio file
 that is already there. The script box seeds itself from the step's first
-message when it is empty.
+message when it is empty. Generating the audio from the script is a host
+feature: `dev` doesn't offer it, so locally the panel has Record and Asset
+only (see [Host capabilities](#host-capabilities)).
 
 **Cover widgets.** A cover holds one widget. The inspector switches between
 headline, form and embed, and edits their fields: title, description,
@@ -179,6 +181,53 @@ not overwrite a file it cannot read.
 
 A config with a missing or malformed `id` is not an error — the editor
 mints one in memory and persists it on the next save.
+
+## Host capabilities
+
+The editor is a static app; whatever serves it (here, `dev`) is its host.
+On load the editor asks the host what optional features it offers:
+
+```
+GET /__demo/editor/capabilities
+→ 200 application/json  {}
+```
+
+`dev` answers `{}` — it offers none — and the editor treats any other
+answer that isn't a JSON object (a 404, a network error, or an older CLI
+that returns the editor page itself) the same way. A host that can
+synthesize speech advertises it:
+
+```json
+{
+  "voiceover": {
+    "voices": [
+      { "id": "ashley", "name": "Ashley", "descriptor": "Warm female",
+        "country": "United States", "previewUrl": "https://…/ashley.mp3",
+        "isDefault": true }
+    ],
+    "maxChars": 1000
+  }
+}
+```
+
+With that, the Voiceover panel gains a **Voice** picker (grouped by
+country, each voice with a sample to play) and a **Generate** button per
+step, which calls:
+
+```
+POST /__demo/editor/demos/:slug/voiceover
+body  { "stepId": "s1", "text": "…", "voiceId": "ashley" }
+→ 200 { "asset": EditorAssetMeta, "sentences": ["…", "…"] }
+```
+
+The host synthesizes the speech, stores the audio as an asset of the demo
+and returns its entry — the same shape `POST …/assets` returns, so
+`asset.path` is what the step references — plus the text split into the
+sentences it read. The editor sets the step's `voiceover` to that path with
+the clip's duration in milliseconds and writes one caption cue per
+sentence, timed in proportion to its length. An error answer's `{ "error" }`
+message is shown under the step. `maxChars` caps the text sent in one
+request. `dev` does not implement this route.
 
 ## Working on the runtime at the same time
 
