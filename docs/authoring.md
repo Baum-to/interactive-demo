@@ -33,7 +33,8 @@ left, the demo title, and up to two call-to-action buttons on the right. It
 is plain HTML around the player, not part of `player.js`, so an iframe of a
 built page shows it and a page you assemble from the page contract does not.
 All of `brand` is optional; with nothing set the bar shows only the demo
-title.
+title. Under `dev` the bar also has an **Edit** button that opens the demo in
+the editor; `build` leaves it out.
 
 ```json
 {
@@ -57,6 +58,12 @@ logo image already carries the wordmark. `logoHref` turns the mark into a
 link opening in a new tab; without it the mark links to `/`. CTA and
 `logoHref` URLs must be `http(s)` or `mailto`. The buttons take their colour
 from the theme preset and the `primary` token.
+
+This project `brand` is the page bar around the player. A demo can also
+carry its own `theme.brand` (`logo`, `name`, `logoHref`) for the header
+inside the player — that is the logo the editor's demo settings set, and it
+travels with the demo wherever the player runs, including `<Demo>` in a
+React app.
 
 ## demo.config.json
 
@@ -111,21 +118,33 @@ from widgets).
 ```
 
 - `background.type` is `image` or `video`. A video background adds
-  `posterSrc`, `autoplay` and `muted`; the step advances when the clip ends.
-  `naturalWidth`/`naturalHeight` are the media's pixel size and drive the
-  player's aspect ratio.
+  `posterSrc`, `autoplay` and `muted`; with `chrome.autoplay` on and
+  `advance.trigger: "auto"`, the step advances when the clip ends, and
+  otherwise it holds on the last frame. Hotspots and zoom appear once the
+  clip has played. `naturalWidth`/`naturalHeight` are the media's pixel size
+  and drive the player's aspect ratio.
 - `annotations` are the hotspots. `x`, `y` (and `w`, `h` for `area`) are
-  fractions of the screen, 0–1. Variants of a `message`: `pointer` (a cursor
-  with a bubble), `callout` (a numbered marker), `area` (a highlighted
-  region), plus `text` overlays and `blur` boxes to hide sensitive data.
+  fractions of the screen, 0–1. Variants of a `message`: `cursor` (a
+  simulated mouse pointer that glides over from the previous step; `capture`
+  writes these), `pointer` (a pulsing dot with a bubble), `callout` (a
+  pinned card, the default), `area` (a highlighted region), plus `text`
+  overlays and `blur` boxes to hide sensitive data.
   A message with `advancesStep: true` (the default) moves to the next step
   when clicked.
-- `captions` are timed subtitles in milliseconds from the step's start.
-- `transform` zooms the screen towards a point; the editor sets it when you
-  zoom in on a hotspot.
-- `advance.trigger` is `click` (wait for the viewer) or `auto` (advance
-  after `duration` ms, or when the video ends). `chrome.autoplay` must be
-  `true` for `auto` steps to run on their own.
+- `captions` are timed subtitles in milliseconds. On a step with a
+  voiceover they follow the audio's clock; otherwise, the time since the
+  step started. `start` and `end` are optional — leave both out and the
+  caption shows for the whole step.
+- `voiceover` is an audio file played with the step. The editor's Generate
+  writes one caption per sentence next to it.
+- `transform` zooms the screen towards a point; the editor's Zoom sets it.
+- `duration` (ms) pins how long the step runs. Leave it out and the step
+  lasts as long as its voiceover or its video, whichever is longer, or 5
+  seconds when it has neither.
+- `advance.trigger` is `click` (wait for the viewer) or `auto` (move on when
+  the step's duration is up). It defaults to `auto` on a content step and
+  `click` on a cover. `chrome.autoplay` must be `true` for `auto` steps to
+  run on their own; without it every step waits at its end.
 
 **Cover step**
 
@@ -177,7 +196,10 @@ and the editor's Submissions section fills it in for you.
 
 ### Chapters and chrome
 
-`chapters` group step ids under titles for the chapter menu. `chrome`
+`chapters` group step ids under titles. The default player layout has no
+chapter menu: chapters are what a `chapter` button action jumps to, what
+`controls.seekToChapter(id)` seeks to, and what `Demo.Chapters` lists in a
+custom layout (see [runtime.md](runtime.md)). `chrome`
 controls the frame around the screen: `hideHeader`, `controls`
 (`full` | `minimal` | `hidden`), `mobileFooterMessage`, `autoplay`, and
 `branding` (the "Built with Inkly" badge, default `true`).
@@ -202,10 +224,12 @@ the file into `assets/` and reference it.
 `capture stop` writes `demos/<slug>/` with the config and readable file
 names: `screen-001.png`, `screen-002.webm` plus
 `screen-002-poster.png` for a video step. Each click becomes a content step
-with a `cursor` annotation on the clicked element and a zoom towards it;
-the element's label becomes the step label. Scrolling or typing right
-before a click is recorded as a short video step; without `ffmpeg` it is a
-still instead.
+with a `cursor` annotation on the clicked element reading
+`Click on "<label>"`, where the label is the element's accessible name, and
+`advance.trigger: "click"`. Screenshot steps also get a zoom towards the
+click (`--no-zoom` turns it off); video steps don't. Scrolling or typing
+right before a click is recorded as a short video step; without `ffmpeg` it
+is a still instead.
 
 ## Adding a video step by hand
 
