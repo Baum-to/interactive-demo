@@ -20,24 +20,29 @@ export { MAX_ASSET_BYTES, generatedAssetId } from './asset-helpers.js';
  *            editor hides any feature whose key is absent.
  *   GET    /__demo/editor/demos/:slug/files
  *          → { files: { "<path>": "<text>", … } } for every text file in the
- *            demo folder (demo.config.json, assets.json, …). Binary assets are
- *            listed by path only under `binary: string[]`.
+ *            demo folder (demo.config.json, …). Binary files — the media
+ *            under assets/ — are listed by path only under `binary: string[]`.
  *   PUT    /__demo/editor/demos/:slug/files
  *          body { files: { "<path>": "<text>" } }  — writes each file.
  *          body { delete: ["<path>", …] }          — removes each file.
  *          → { ok: true }
  *   GET    /__demo/editor/demos/:slug/assets
- *          → { assets: AssetMeta[] } — the assets.json entries, each with a
- *            `publicUrl` the editor can load from this server.
- *   POST   /__demo/editor/demos/:slug/assets?name=<file>[&kind=image|video|audio]
- *          raw request body = the asset bytes; written to `assets/<file>`
- *          and registered in assets.json (content hash, size, kind). When
- *          `<file>` already exists with different bytes the upload lands
- *          under a de-duplicated name (`hero-2.png`) with a new id, so
- *          steps referencing the old asset are unaffected. Max 100 MB.
+ *          → { assets: AssetMeta[] } — every file directly under assets/,
+ *            with its size, content type, kind and a `publicUrl` the editor
+ *            can load from this server. There is no manifest: the folder is
+ *            the list, and the config points at files by relative path.
+ *   POST   /__demo/editor/demos/:slug/assets?name=<file>[&kind=image|video|audio|font]
+ *          raw request body = the asset bytes; written to `assets/<file>`.
+ *          The same bytes under the same name are a no-op. Different bytes
+ *          under an existing name land under a de-duplicated name
+ *          (`hero-2.png`), so steps referencing the old file are unaffected.
+ *          Max 100 MB.
  *          → { ok: true, file, renamedFrom?, asset: AssetMeta }
  *   DELETE /__demo/editor/demos/:slug/assets?name=<file>
- *          removes the file and its manifest entry. → { ok: true }
+ *          removes `assets/<file>`. → { ok: true }
+ *   GET    /__demo/editor/demos/:slug/embed
+ *          → the Share dialog's snippets for the demo's static build, sized
+ *            to the demo (see embedSnippetsFor).
  *
  * All paths are forward-slash and relative to the demo folder; anything that
  * escapes it is rejected with 400.
