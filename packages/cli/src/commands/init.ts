@@ -249,9 +249,9 @@ async function scaffoldDemoFolder(slug: string, destDir: string): Promise<string
  * is preserved when valid and re-minted otherwise.
  */
 /**
- * Import a demo from either a folder or a `.zip` of one. The capture
- * extension downloads a zip, and requiring a manual unzip before this command
- * made a two-step chore out of a one-command import.
+ * Import a demo from either a folder or a `.zip` of one. A capture often
+ * arrives as a zip, and requiring a manual unzip before this command made a
+ * two-step chore out of a one-command import.
  */
 async function importDemoSource(src: string, destDir: string): Promise<string> {
   if (!src.toLowerCase().endsWith('.zip')) {
