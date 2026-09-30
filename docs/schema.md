@@ -24,7 +24,7 @@ Per-demo configuration. One per demo, lives at demos/<slug>/demo.config.json.
 | `chrome` | [chrome](#chrome) |  | Default `{"hideHeader":false,"hideControls":false,"mobileFooterMessage":true,"autoplay":false,"branding":true}`. |
 | `aspectRatio` | [aspectRatio](#aspectratio) |  |  |
 | `chapters` | [chapters](#chapters)[] |  | Default `[]`. |
-| `steps` | [steps (kind = `content`)](#steps-kind-content) \| [steps (kind = `cover`)](#steps-kind-cover)[] | yes |  |
+| `steps` | [steps (kind = `content`)](#steps-kind--content) \| [steps (kind = `cover`)](#steps-kind--cover)[] | yes |  |
 
 ### background
 
@@ -97,12 +97,12 @@ Per-demo configuration. One per demo, lives at demos/<slug>/demo.config.json.
 | `id` | string | yes |  |
 | `label` | string |  |  |
 | `duration` | number |  |  |
-| `background` | [background (type = `image`)](#background-type-image) \| [background (type = `video`)](#background-type-video) | yes |  |
+| `background` | [background (type = `image`)](#background-type--image) \| [background (type = `video`)](#background-type--video) | yes |  |
 | `script` | string |  |  |
 | `voiceover` | [voiceover](#voiceover) |  |  |
 | `transform` | [transform](#transform) |  |  |
 | `advance` | [advance](#advance) |  | Default `{"trigger":"auto"}`. |
-| `annotations` | [annotations (type = `message`)](#annotations-type-message) \| [annotations (type = `blur`)](#annotations-type-blur) \| [annotations (type = `text`)](#annotations-type-text)[] |  | Default `[]`. |
+| `annotations` | [annotations (type = `message`)](#annotations-type--message) \| [annotations (type = `blur`)](#annotations-type--blur) \| [annotations (type = `text`)](#annotations-type--text)[] |  | Default `[]`. |
 | `captions` | [captions](#captions)[] |  |  |
 
 #### background (type = `image`)
@@ -227,14 +227,14 @@ Per-demo configuration. One per demo, lives at demos/<slug>/demo.config.json.
 | `kind` | `"cover"` | yes |  |
 | `id` | string | yes |  |
 | `label` | string |  |  |
-| `widgets` | [widgets (type = `headline`)](#widgets-type-headline) \| [widgets (type = `form`)](#widgets-type-form) \| [widgets (type = `embed`)](#widgets-type-embed) \| [widgets (type = `custom`)](#widgets-type-custom)[] | yes |  |
-| `background` | [background](#background) |  |  |
+| `widgets` | [widgets (type = `headline`)](#widgets-type--headline) \| [widgets (type = `form`)](#widgets-type--form) \| [widgets (type = `embed`)](#widgets-type--embed) \| [widgets (type = `custom`)](#widgets-type--custom)[] | yes |  |
+| `background` | [background](#background-1) |  |  |
 | `backgroundImage` | [backgroundImage](#backgroundimage) |  |  |
 | `backgroundDim` | number |  | Range 0–1. |
 | `script` | string |  |  |
 | `voiceover` | [voiceover](#voiceover) |  |  |
 | `duration` | number |  |  |
-| `advance` | [advance](#advance) |  | Default `{"trigger":"click"}`. |
+| `advance` | [advance](#advance-1) |  | Default `{"trigger":"click"}`. |
 
 #### widgets (type = `headline`)
 
@@ -276,7 +276,7 @@ Per-demo configuration. One per demo, lives at demos/<slug>/demo.config.json.
 | field | type | required | notes |
 |---|---|---|---|
 | `label` | string | yes |  |
-| `action` | [action (type = `next`)](#action-type-next) \| [action (type = `prev`)](#action-type-prev) \| [action (type = `step`)](#action-type-step) \| [action (type = `chapter`)](#action-type-chapter) \| [action (type = `url`)](#action-type-url) \| [action (type = `restart`)](#action-type-restart) |  | Default `{"type":"next"}`. |
+| `action` | [action (type = `next`)](#action-type--next) \| [action (type = `prev`)](#action-type--prev) \| [action (type = `step`)](#action-type--step) \| [action (type = `chapter`)](#action-type--chapter) \| [action (type = `url`)](#action-type--url) \| [action (type = `restart`)](#action-type--restart) |  | Default `{"type":"next"}`. |
 | `animation` | `"none"` \| `"shimmer"` |  | Default `"shimmer"`. |
 | `background` | string |  |  |
 | `textColor` | string |  |  |
@@ -358,7 +358,7 @@ Per-demo configuration. One per demo, lives at demos/<slug>/demo.config.json.
 | field | type | required | notes |
 |---|---|---|---|
 | `label` | string | yes |  |
-| `action` | [action (type = `next`)](#action-type-next) \| [action (type = `prev`)](#action-type-prev) \| [action (type = `step`)](#action-type-step) \| [action (type = `chapter`)](#action-type-chapter) \| [action (type = `url`)](#action-type-url) \| [action (type = `restart`)](#action-type-restart) |  | Default `{"type":"next"}`. |
+| `action` | [action (type = `next`)](#action-type--next) \| [action (type = `prev`)](#action-type--prev) \| [action (type = `step`)](#action-type--step) \| [action (type = `chapter`)](#action-type--chapter) \| [action (type = `url`)](#action-type--url) \| [action (type = `restart`)](#action-type--restart) |  | Default `{"type":"next"}`. |
 | `animation` | `"none"` \| `"shimmer"` |  | Default `"shimmer"`. |
 | `background` | string |  |  |
 | `textColor` | string |  |  |

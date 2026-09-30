@@ -11,6 +11,7 @@ const schema = JSON.parse(
 );
 
 const sections = [];
+const titles = [];
 const seen = new Map();
 
 function typeOf(s) {
@@ -52,11 +53,40 @@ function variantTitle(s, fallback) {
   return fallback;
 }
 
+// GitHub's heading anchors (github-slugger): the heading's text — code spans
+// keep their contents, the backticks go — lowercased, every character that is
+// not a letter, digit, space, hyphen or underscore dropped, each space turned
+// into a hyphen. Runs are NOT collapsed: `steps (kind = \`content\`)` is
+// `steps-kind--content`. A repeated slug gets -1, -2 … in document order.
+function githubSlugger() {
+  const occurrences = new Map();
+  return (heading) => {
+    const base = heading
+      .replace(/`/g, '')
+      .toLowerCase()
+      .replace(/[^\p{L}\p{M}\p{N}\p{Pc} -]/gu, '')
+      .replace(/ /g, '-');
+    let slug = base;
+    while (occurrences.has(slug)) {
+      occurrences.set(base, occurrences.get(base) + 1);
+      slug = `${base}-${occurrences.get(base)}`;
+    }
+    occurrences.set(slug, 0);
+    return slug;
+  };
+}
+
+// Links are written as a placeholder naming the target section, and resolved
+// once every heading exists: a heading's anchor depends on how many headings
+// with the same text come before it, which is unknown mid-walk.
+const link = (index) => `@@anchor:${index}@@`;
+
 function emit(s, title, depth) {
   const sig = JSON.stringify(s);
   if (seen.has(sig)) return seen.get(sig);
-  seen.set(sig, title);
   const index = sections.push('') - 1;
+  seen.set(sig, { title, index });
+  titles[index] = title;
   const required = new Set(s.required ?? []);
   const rows = [];
   for (const [name, prop] of Object.entries(s.properties ?? {})) {
@@ -65,7 +95,7 @@ function emit(s, title, depth) {
     if (objs.length && depth < 4) {
       const links = objs.map((o) => {
         const t = emit(o, variantTitle(o, objs.length > 1 ? name : name), depth + 1);
-        return `[${t}](#${t.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')})`;
+        return `[${t.title}](#${link(t.index)})`;
       });
       type = prop.type === 'array' ? `${links.join(' \\| ')}[]` : links.join(' \\| ');
     }
@@ -73,12 +103,18 @@ function emit(s, title, depth) {
   }
   sections[index] =
     `${'#'.repeat(Math.min(depth + 2, 5))} ${title}\n\n${s.description ? s.description.replace(/\s+/g, ' ').trim() + '\n\n' : ''}| field | type | required | notes |\n|---|---|---|---|\n${rows.join('\n')}\n`;
-  return title;
+  return { title, index };
 }
 
 emit(schema, 'Demo (demo.config.json)', 0);
 
-const out = `# demo.config.json reference
+const TITLE = 'demo.config.json reference';
+const slug = githubSlugger();
+slug(TITLE);
+const anchors = titles.map((t) => slug(t));
+const body = sections.join('\n').replace(/@@anchor:(\d+)@@/g, (_, i) => anchors[Number(i)]);
+
+const out = `# ${TITLE}
 
 Generated from the JSON schema published with \`@inkly-org/interactive-demo\`
 (\`dist/schema/demo.config.json\`). Regenerate with \`node scripts/docs-schema.mjs\`.
@@ -88,7 +124,7 @@ Point editors at the schema with:
 { "$schema": "${schema.$id}" }
 \`\`\`
 
-${sections.join('\n')}
+${body}
 > \`annotations[]\` and \`widgets[]\` also accept any object whose \`type\` is not one
 > of the variants above; the player skips those (forward compatibility).
 `;
