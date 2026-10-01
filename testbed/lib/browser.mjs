@@ -1,6 +1,6 @@
 /**
  * A headless Chrome that navigates, clicks and returns PNG screenshots at an
- * exact size. Used to retake the self-demo's screens; the product's own
+ * exact size. Used to retake the showcase's screens; the product's own
  * `capture` command drives its sessions through packages/cli/src/capture.
  */
 import { spawn } from 'node:child_process';
@@ -62,7 +62,15 @@ export async function launch({ width = 1440, height = 900, scale = 2 } = {}) {
     proc.once('exit', resolve);
     proc.once('error', resolve);
   });
-  const removeProfile = () => rmSync(profile, { recursive: true, force: true, maxRetries: 3 });
+  // Chrome's helpers can outlive it by a moment and still be writing; a
+  // profile left in the temp folder is not worth failing a shoot over.
+  const removeProfile = () => {
+    try {
+      rmSync(profile, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 });
+    } catch {
+      /* left for the OS to clean up */
+    }
+  };
   const onExit = () => {
     proc.kill('SIGKILL');
     removeProfile();
