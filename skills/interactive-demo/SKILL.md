@@ -122,7 +122,7 @@ capture gives you structure, not writing.
   broken reference before a viewer does.
 
 Full field reference: `docs/schema.md` in the repo, generated from the schema
-itself. `docs/authoring.md` explains the concepts.
+itself. https://docs.inklyai.dev/open-source/authoring explains the concepts.
 
 ## Gotchas that cost time
 

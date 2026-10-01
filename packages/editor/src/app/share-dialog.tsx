@@ -199,7 +199,7 @@ export function ShareDialog({
                             app's? Inline and Pop-up are the same built page in
                             two shapes, so they belong together; the React
                             component is the other answer, not a third shape.
-                            See docs/embedding.md. */}
+                            See https://docs.inklyai.dev/open-source/embedding. */}
                         <nav className="flex flex-col gap-px">
                             <ShareNavItem active={section === "publish"} onClick={() => setSection("publish")} label="Send the link" />
                             <ShareNavGroupLabel>Frame the page</ShareNavGroupLabel>

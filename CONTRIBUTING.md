@@ -29,9 +29,14 @@ npm test
 ```
 
 CI then also checks that `docs/schema.md` matches the schema (regenerate it
-with `node scripts/docs-schema.mjs`), validates and builds both projects
+with `node scripts/docs-schema.mjs`), validates and builds the project
 under `examples/` with the built CLI, and runs the browser-free testbed
 phases (`npm run testbed -- --only cli,dev,editor,build,host,failures`).
+
+The user guides are not in this repo: they live on the docs site at
+[docs.inklyai.dev/open-source](https://docs.inklyai.dev/open-source/overview). `docs/` here holds only the
+generated `schema.md`, `architecture.md` and the README's images, so a change
+to behaviour a guide describes needs a matching change there.
 
 Ported code keeps its existing formatting; do not reformat files you are not otherwise changing.
 

@@ -25,7 +25,7 @@ Open-source interactive product demos: `packages/runtime` (React player + schema
 From the repo root: `npm run build`, `npm run typecheck`, `npm run lint` (0 errors; two known
 hook warnings in the runtime), `npm test` (57 files as of this line; the count moves — zero
 failures is the bar). CI also validates and builds
-`examples/showcase` and `examples/self-demo` with the built CLI. A fresh-clone simulation (`git clone`, `npm ci`,
+`examples/showcase` with the built CLI. A fresh-clone simulation (`git clone`, `npm ci`,
 then the four commands) is the bar before calling anything done.
 
 ## Conventions worth knowing
@@ -44,4 +44,8 @@ then the four commands) is the bar before calling anything done.
   origin differs, and saying so is what keeps the choice low-stakes.
 - Two questions decide how a demo is used, and the docs are cut along them: does it run as its
   own page (link / iframe / `embed.js`) or inside a React app (`<Demo>` / `<DemoModal>`), and —
-  for the page — who hosts it. `docs/embedding.md` leads with that table; keep it that way.
+  for the page — who hosts it. The docs site's Sharing and embedding page leads with that table;
+  keep it that way.
+- The guides live on docs.inklyai.dev under the Open source tab (`open-source/` in the docs site
+  repo), not in this repo. `docs/` here keeps the generated `schema.md`, `architecture.md` and
+  the README's images.

@@ -39,7 +39,7 @@ A page that isn't React opens a demo page in a pop-up with the loader
 instead: `@inkly-org/interactive-demo/embed.js` (the CLI's `build` copies it
 to `dist/embed.js`) adds `InteractiveDemo.open(url)`.
 
-[docs/runtime.md](../../docs/runtime.md) has every prop, the events and the
+[The runtime reference](https://docs.inklyai.dev/open-source/runtime) has every prop, the events and the
 page contract.
 
 ## Use the self-contained player on a static page

@@ -1,8 +1,8 @@
 # Architecture
 
 This is a map of the repo for someone who wants to change it. If you only want
-to make a demo, read [authoring.md](authoring.md) and
-[embedding.md](embedding.md) instead.
+to make a demo, read the guides at
+[docs.inklyai.dev/open-source](https://docs.inklyai.dev/open-source/overview) instead.
 
 The repo is an npm workspace (`packages/*`) with three packages, two of which
 are published. Node 20 or newer; `.nvmrc` pins 22 and CI runs 22.
@@ -282,11 +282,11 @@ The other pieces under `testbed/`:
   at `/api/form`. Run it with `node testbed/host/serve.mjs --dist <dir>`.
 - `testbed/app/` — a stand-in product (five static screens) to point `capture`
   at, so you can record a demo without a real app.
-- `testbed/lib/` — the CDP client, a headless-browser helper and the terminal
-  card renderer.
-- `testbed/shoot.mjs` — re-shoots `examples/self-demo` end to end. Needs Chrome.
-- `testbed/shoot-showcase.mjs` — re-shoots `examples/showcase` and, with
-  `INWORLD_API_KEY` set, its narration. Needs Chrome and ffmpeg.
+- `testbed/lib/` — the CDP client, a headless-browser helper, a driver for
+  the Chrome extension and the terminal card renderer.
+- `testbed/shoot-showcase.mjs` — re-shoots `examples/showcase` end to end
+  and, with `INWORLD_API_KEY` set, its narration. Needs Chrome and ffmpeg.
+- `testbed/hero.mjs` — films the README's two animations from the showcase.
 
 ## Checks a change has to pass
 
@@ -327,8 +327,7 @@ One workflow runs on every push to `main` and every pull request:
 3. **schema drift** — runs `node scripts/docs-schema.mjs` and then
    `git diff --exit-code -- docs/schema.md`. A diff fails the build.
 4. `validate --strict` and `build` of `examples/showcase` with the built CLI
-5. `validate --strict` and `build` of `examples/self-demo`
-6. the browser-free testbed phases
+5. the browser-free testbed phases
 
 The two publish workflows, `.github/workflows/publish-runtime.yml` and
 `.github/workflows/publish-cli.yml`, are triggered by tags (`runtime-v*` and

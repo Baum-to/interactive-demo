@@ -29,7 +29,7 @@ way; only the origin differs.
 | `version`, `help [command]` | |
 
 `dev` also accepts a bare demo folder (one containing `demo.config.json`) and
-serves it in place. [docs/cli.md](../../docs/cli.md) has every flag.
+serves it in place. [The CLI reference](https://docs.inklyai.dev/open-source/cli) has every flag.
 
 ## Project layout
 
@@ -141,7 +141,7 @@ Deploy the folder as static files and embed a demo with an iframe:
 
 `?embed=inline` renders the player alone, without the page bar and canvas.
 `build` prints the full snippets for you — this iframe sized to the demo, and
-a pop-up button — from the same code as `embed` and `publish`. See [docs/embedding.md](../../docs/embedding.md).
+a pop-up button — from the same code as `embed` and `publish`. See [Sharing and embedding](https://docs.inklyai.dev/open-source/embedding).
 
 `build` empties its output folder first, so it only does that to a folder it
 created (it leaves a `.interactive-demo-build` marker) or an empty one. It

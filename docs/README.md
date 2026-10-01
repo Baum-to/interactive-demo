@@ -1,39 +1,26 @@
 # Docs
 
-Start with whichever matches what you are doing.
+The guides for interactive-demo live on the docs site:
+**[docs.inklyai.dev/open-source](https://docs.inklyai.dev/open-source/overview)**.
 
-## Making a demo
+| | |
+|---|---|
+| [Quickstart](https://docs.inklyai.dev/open-source/quickstart) | scaffold, capture, write it up, ship |
+| [Use your agent](https://docs.inklyai.dev/open-source/agent-skill) | the [skill](../skills/interactive-demo/SKILL.md), and how to hand an agent the job |
+| [Capture](https://docs.inklyai.dev/open-source/capture) | the CLI recorder, video steps, logins, the Chrome extension |
+| [Authoring](https://docs.inklyai.dev/open-source/authoring) | project layout, steps, hotspots, captions, voiceover, the theme |
+| [The editor](https://docs.inklyai.dev/open-source/editor) | what you can change, autosave, how edits land in your files |
+| [Publish and self-host](https://docs.inklyai.dev/open-source/publish-and-self-host) | `publish` to a link, or `build` a folder for any static host |
+| [Sharing and embedding](https://docs.inklyai.dev/open-source/embedding) | link, iframe, pop-up or React |
+| [CLI reference](https://docs.inklyai.dev/open-source/cli) | every command, flag and default |
+| [Runtime and React API](https://docs.inklyai.dev/open-source/runtime) | `<Demo>`, `<DemoModal>`, events, the page contract, the theme |
 
-- [Authoring demos](authoring.md) — the project layout, what a step is,
-  hotspots, captions, chapters, voiceover, assets. Read this first if you are
-  writing a demo by hand.
-- [Capturing from a live app](capture.md) — click through your product in
-  Chrome and let every click become a step. Covers video steps, what to do
-  when a click is missed, and how to recover an interrupted session.
-- [The local editor](editor.md) — the editor `dev` serves. What you can
-  change, how autosave works, and the guarantee that your `demo.config.json`
-  comes back in the shape you wrote it.
+## What stays in this folder
 
-## Shipping it
-
-- [Sharing and embedding](embedding.md) — the ways to put a demo in front of
-  someone: send the link, frame the page, or render it in your own React app.
-  Also covers the two ways to get the page online — `publish` it, or host the
-  built folder yourself. Start here if you are not sure which you want.
-- [Runtime and React API](runtime.md) — `<Demo>` and its props, `<DemoModal>`,
-  the static page contract, the events a host page can listen for, themes and
-  fonts.
-
-## Reference
-
-- [CLI reference](cli.md) — every command, every flag, and its real default.
-- [`demo.config.json` reference](schema.md) — every field in the config.
-  Generated from the schema; do not edit it by hand.
-
-## Working on this repo
-
-- [Architecture](architecture.md) — what each package is responsible for, the
-  build graph and why the editor has to be rebuilt after a runtime change, the
-  testbed, and the checks a change has to pass.
-- [CONTRIBUTING](../CONTRIBUTING.md) — how to propose a change, and the
-  sign-off the project uses.
+- [`schema.md`](schema.md) — every field of `demo.config.json`. Generated from
+  the schema by `node scripts/docs-schema.mjs`, and CI fails if it drifts; do
+  not edit it by hand.
+- [`architecture.md`](architecture.md) — for working on this repo: what each
+  package is responsible for, the build graph, the testbed, and the checks a
+  change has to pass. See also [CONTRIBUTING](../CONTRIBUTING.md).
+- `images/` — the README's images.

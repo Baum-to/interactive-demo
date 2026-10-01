@@ -60,4 +60,4 @@ All under `/__demo/editor/demos/<slug>/`, provided by `packages/cli/src/dev/edit
 offers; `dev` answers `{}`. A host that advertises `voiceover` must also
 serve `POST /__demo/editor/demos/<slug>/voiceover` (text-to-speech into a
 new audio asset); the CLI does not. Both are described in
-[docs/editor.md](../../docs/editor.md#host-capabilities).
+[the editor guide](https://docs.inklyai.dev/open-source/editor#host-capabilities).
