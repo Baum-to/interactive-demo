@@ -1,18 +1,14 @@
 {
   "name": "showcase",
   "demos": [
-    "acme-tour"
+    "interactive-demo"
   ],
   "brand": {
-    "logo": "brand/acme-mark.svg",
-    "logoHref": "https://example.com",
+    "logo": "brand/inkly-wordmark.svg",
+    "logoHref": "https://inklyai.dev",
     "cta": {
-      "label": "Start free trial",
-      "href": "https://example.com"
-    },
-    "secondaryCta": {
-      "label": "View source",
-      "href": "https://github.com/inkly-ai/interactive-demo/tree/main/examples/showcase"
+      "label": "GitHub",
+      "href": "https://github.com/inkly-ai/interactive-demo"
     }
   }
 }

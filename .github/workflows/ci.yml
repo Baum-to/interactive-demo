@@ -28,10 +28,5 @@ jobs:
           node ../../packages/cli/dist/cli.js validate --strict
           node ../../packages/cli/dist/cli.js build
         working-directory: examples/showcase
-      - name: Validate and build the self-demo
-        run: |
-          node ../../packages/cli/dist/cli.js validate --strict
-          node ../../packages/cli/dist/cli.js build
-        working-directory: examples/self-demo
       - name: Testbed smoke run (everything but the Chrome capture)
         run: npm run testbed -- --only cli,dev,editor,build,host,failures

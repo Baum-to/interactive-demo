@@ -1,22 +1,23 @@
 #!/usr/bin/env node
 /**
- * Films the README's two animations from the self-demo.
+ * Films the README's two animations from the showcase.
  *
  *   node testbed/hero.mjs [--only demo,editor] [--out <dir>] [--frames <dir>]
  *
- *   demo    docs/images/demo.webp — the built self-demo playing, cover to
+ *   demo    docs/images/demo.webp — the built showcase playing, cover to
  *           outro, driven through the player's own `window.__demo.controls`.
- *   editor  docs/images/editor-anim.webp — the editor open on the self-demo,
- *           clicked through its filmstrip the way a person would.
+ *   editor  docs/images/editor-anim.webp — the editor open on the showcase,
+ *           clicked through its filmstrip the way a person would, then a
+ *           hotspot opened for editing.
  *
- * Both are photographs of the real thing: the self-demo is built with the
+ * Both are photographs of the real thing: the showcase is built with the
  * built CLI and served from the testbed's stand-in site, the editor is the
  * one `interactive-demo dev` serves. Frames are taken in real time, identical
  * neighbours are merged into one longer frame, and the lot is encoded as a
  * looping animated WebP small enough for a README.
  *
- * Re-shoot the self-demo first (`node testbed/shoot.mjs`) when the UI has
- * changed; this only films what is in examples/self-demo.
+ * Re-shoot the showcase first (`node testbed/shoot-showcase.mjs`) when the UI
+ * has changed; this only films what is in examples/showcase.
  */
 import { existsSync, mkdirSync, statSync } from 'node:fs';
 import { mkdtemp, rm } from 'node:fs/promises';
@@ -34,8 +35,8 @@ const flag = (name, fallback) => {
 const ONLY = new Set(flag('only', 'demo,editor').split(','));
 const OUT = resolve(repoRoot, flag('out', 'docs/images'));
 const FRAMES = flag('frames', null) && resolve(flag('frames'));
-const SELF_DEMO = join(repoRoot, 'examples/self-demo');
-const SLUG = 'product-tour';
+const SHOWCASE = join(repoRoot, 'examples/showcase');
+const SLUG = 'interactive-demo';
 
 /** Output width of both animations; the viewport is scaled down to it. */
 const OUT_WIDTH = 1000;
@@ -59,12 +60,12 @@ function reel(browser) {
   const frames = [];
   return {
     frames,
-    async hold(ms) {
+    async hold(ms, tick = TICK) {
       const end = Date.now() + ms;
       while (Date.now() < end) {
         const at = Date.now();
         frames.push({ png: await browser.frame(), at });
-        const left = TICK - (Date.now() - at);
+        const left = tick - (Date.now() - at);
         if (left > 0) await sleep(left);
       }
     },
@@ -75,7 +76,7 @@ function reel(browser) {
  * Scale each frame down, merge runs of identical frames into one longer frame,
  * and encode an animated WebP that loops forever.
  */
-async function encode(frames, file, { quality }) {
+async function encode(frames, file, { quality, width: outWidth = OUT_WIDTH }) {
   const scaled = [];
   for (let i = 0; i < frames.length; i++) {
     const next = frames[i + 1]?.at ?? frames[i].at + TICK;
@@ -83,7 +84,7 @@ async function encode(frames, file, { quality }) {
     // even when a screenshot took a little longer than a tick.
     const delay = Math.max(TICK, Math.round((next - frames[i].at) / TICK) * TICK);
     const raw = await sharp(frames[i].png)
-      .resize({ width: OUT_WIDTH, kernel: 'lanczos3' })
+      .resize({ width: outWidth, kernel: 'lanczos3' })
       .removeAlpha()
       .raw()
       .toBuffer({ resolveWithObject: true });
@@ -157,9 +158,9 @@ let browser;
 
 try {
   if (ONLY.has('demo')) {
-    step('building the self-demo and serving it');
+    step('building the showcase and serving it');
     const dist = join(work, 'dist');
-    await cli(['build', '--out', dist], { cwd: SELF_DEMO });
+    await cli(['build', '--out', dist], { cwd: SHOWCASE });
     const port = await freePort();
     await startServer([join(repoRoot, 'testbed/host/serve.mjs'), '--dist', dist, '--port', String(port)], {
       needle: 'testbed host running',
@@ -168,7 +169,7 @@ try {
     const url = `http://127.0.0.1:${port}/demo/${SLUG}/`;
     note(url);
 
-    step('filming the self-demo playing');
+    step('filming the showcase playing');
     // 1280x760 scales to the 1000x594 frame the README has always had, and
     // lets the player fill most of it.
     browser = await launch({ width: 1280, height: 760, scale: 1 });
@@ -179,21 +180,46 @@ try {
 
     const film = reel(browser);
     const steps = await browser.evaluate('window.__demo.stepIds.length');
-    await film.hold(2200); // the cover, long enough to read the headline
+    // Every step is held long enough to read it: this is a README picture,
+    // and a viewer of the real demo sets their own pace with a click.
+    const READ = 2800;
+    // Half the usual rate: a pulsing hotspot makes every frame a new one.
+    await film.hold(READ, TICK * 2);
     for (let i = 1; i < steps; i++) {
       await browser.evaluate('window.__demo.controls.next(); 1');
-      await film.hold(i === steps - 1 ? 2000 : 1500);
+      const clip = await browser.evaluate(`(() => {
+        const step = window.__demo.demo.steps[${i}];
+        return step.background && step.background.type === 'video';
+      })()`);
+      if (clip) {
+        // A clip's opening seconds, filmed at a third of the rate (every
+        // frame of one is a new picture, the costly kind), then its last
+        // frame, where the hotspot is.
+        await film.hold(1300, TICK * 3);
+        await browser.evaluate(`(() => {
+          for (const v of document.querySelectorAll('video')) {
+            if (v.duration && !v.paused) v.currentTime = Math.max(0, v.duration - 0.05);
+          }
+          return 1;
+        })()`);
+        await sleep(500);
+        await film.hold(READ - 900, TICK * 2);
+      } else {
+        await film.hold(READ, TICK * 2);
+      }
     }
     await browser.close();
     browser = undefined;
-    await encode(film.frames, 'demo.webp', { quality: 72 });
+    // Six busy screens and a clip: a little narrower and softer than the
+    // editor's film, to stay a README-sized file.
+    await encode(film.frames, 'demo.webp', { quality: 52, width: 920 });
     await stopAll();
   }
 
   if (ONLY.has('editor')) {
-    step('opening the self-demo in the editor');
+    step('opening the showcase in the editor');
     const port = await freePort();
-    await startServer([CLI, 'dev', '--port', String(port)], { cwd: SELF_DEMO, needle: 'running at', label: 'dev' });
+    await startServer([CLI, 'dev', '--port', String(port)], { cwd: SHOWCASE, needle: 'running at', label: 'dev' });
     const url = `http://127.0.0.1:${port}/__demo/editor/#/${SLUG}`;
     note(url);
 
@@ -202,14 +228,14 @@ try {
     await browser.goto(url, 800);
     // One entry per step: the thumbnail's own button, not its menu or its dot.
     const thumbs = `Array.from(document.querySelectorAll('[class~="group/thumb"]'), (t) => t.querySelector('button'))`;
-    await settle(browser, `${thumbs}.length > 4`);
+    await settle(browser, `${thumbs}.length > 3`);
     await sleep(1200);
 
     const film = reel(browser);
     await film.hold(900);
-    // Steps two to five: the capture card, the player, the editor, the share
-    // dialog — each picked the way a person would, pointer first.
-    for (let i = 1; i <= 4; i++) {
+    // Steps two to four: the agent's session, the extension, the editor —
+    // each picked the way a person would, pointer first.
+    for (let i = 1; i <= 3; i++) {
       const box = await browser.evaluate(`(() => {
         const button = ${thumbs}[${i}];
         if (!button) return null;
@@ -221,8 +247,15 @@ try {
       await browser.hover(box.x, box.y);
       await film.hold(250);
       await browser.click(box.x, box.y, 0);
-      await film.hold(i === 4 ? 1500 : 1000);
+      await film.hold(1000);
     }
+    // Then the hotspot on that step, which opens its panel for editing.
+    const hotspot = await browser.boxOf('.demo-hotspot-label');
+    if (!hotspot) throw new Error('editor: no hotspot to open on the fourth step');
+    await browser.hover(hotspot.cx, hotspot.cy);
+    await film.hold(250);
+    await browser.click(hotspot.cx, hotspot.cy, 0);
+    await film.hold(1800);
     await browser.close();
     browser = undefined;
     await encode(film.frames, 'editor-anim.webp', { quality: 72 });

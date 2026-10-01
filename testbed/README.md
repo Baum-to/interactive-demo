@@ -60,45 +60,69 @@ It gives you:
 The page lists what to look for at the bottom — the parts that only a browser
 can show (letterboxing, scroll locking, the overlay ratio).
 
-## Re-shooting the self-demo
+## Re-shooting the showcase
 
-`examples/self-demo` is a walkthrough of this product whose screens are all
-real. `testbed/shoot.mjs` produces them:
+`examples/showcase` is a one-minute demo of this product, made with this
+product, and every screen in it is real. `testbed/shoot-showcase.mjs` produces
+them in one run:
 
 ```
 npm run build
-node testbed/shoot.mjs           # writes examples/self-demo/demos/product-tour/assets/
-node testbed/shoot.mjs --keep    # and leave the throwaway project behind
-node testbed/shoot.mjs --out /tmp/shots   # somewhere else, to compare first
+node testbed/shoot-showcase.mjs --extension <dir>   # writes examples/showcase/demos/interactive-demo/assets/
+node testbed/shoot-showcase.mjs --out /tmp/shots    # somewhere else, to compare first
+node testbed/shoot-showcase.mjs --voice-only        # only read the scripts aloud again
+node testbed/shoot-showcase.mjs --voice-only --narrate editor   # …or just one step's
 ```
 
-It scaffolds a project, records `testbed/app/` with the real `capture` command
-(clicks driven over CDP), writes the capture up, builds it, serves it from the
-stand-in site, and photographs the dev preview, the editor, the Share dialog
-and both embeds — plus two terminal cards rendered from the transcripts of the
-commands it just ran. Needs Chrome.
+In order, it:
 
-Element positions land in `metrics.json` beside the screens; the hotspot
-coordinates in `demo.config.json` come from there. A re-shoot never touches the
-copy or the hotspots, so check they still land where they should afterwards.
+1. replays an agent's capture of `testbed/app/` with the real `capture`
+   command and puts the agent's own `demo.config.json` on top (see below),
+   less the theme tokens and button colour it chose, so the player inside
+   the screens is the stock one;
+2. draws that agent session as a Claude Code terminal and films it filling
+   in, line by line, as a video step;
+3. films the Interactive Demo Capture extension really recording the same
+   app — popup, Start Recording, three clicks, the popup counting three
+   steps — as a video step. Only with `--extension <dir>`, the folder of an
+   unpacked build of the extension; without it that clip is left as it is;
+4. opens the demo in the real editor (`dev`) and photographs a hotspot being
+   edited, framed with a margin so the step can zoom in on it cleanly;
+5. builds it, photographs it playing for the cover, embeds it in the
+   stand-in website (opened with `?film=1`, which
+   drops the testbed's demo picker and leaves room under the embed), and
+   records the scroll down to it as a video step, again with the real
+   `capture`;
+6. runs `init my-demos` and draws the command with what it printed, for the
+   outro;
+7. with `INWORLD_API_KEY` set, reads the `script` of each narrated step (the four between the covers) aloud with
+   Inworld TTS (voice Reed, model `inworld-tts-2`) and rewrites that step's `voiceover` and `captions` to match
+   (`--no-voice` skips this).
+
+Needs Chrome and ffmpeg. Element positions land in `metrics.json` beside the
+screens; the hotspot coordinates in `demo.config.json` come from there. A
+re-shoot never touches the copy or the hotspots, so check they still land
+where they should afterwards.
+
+**The agent session is a recording, not a rerun.** An agent does not take the
+same path twice, so one real Claude Code session — the skill in
+`skills/interactive-demo/` installed in a scaffolded project, one prompt — was
+recorded and stored, with the machine's paths taken out, in
+`testbed/fixtures/claude-code-session.json`: the prompt, every tool call and
+its output, the clicks the agent made, and the config it wrote. The clip shows
+a short excerpt of it — the prompt, loading the skill, `capture start`,
+`capture stop`, the write-up and `validate`, the closing message — with every
+cut marked by an ellipsis and the calls in between counted (`EXCERPT` in the
+script says which). To record a new one, run a
+session and pass its transcript (a session `.jsonl`, or the output of
+`claude -p … --output-format stream-json --verbose`) with
+`--session <file> --session-project <the folder it worked in>`.
 
 `node testbed/hero.mjs` (or `npm run hero`) then films the README's two
-animations from the re-shot self-demo — the built player stepping through it
-into `docs/images/demo.webp`, the editor clicked through its filmstrip into
+animations from the re-shot showcase — the built player stepping through it,
+each step held long enough to read, into `docs/images/demo.webp`, the editor clicked through its filmstrip into
 `docs/images/editor-anim.webp` (`--only demo` or `--only editor`, `--out <dir>`,
 `--frames <dir>` to keep the frames).
-
-## Re-shooting the showcase
-
-`examples/showcase` is a product tour of `testbed/app/` itself, the kind a
-customer would make. `node testbed/shoot-showcase.mjs` records it with the
-real `capture` (clicks, plus a scroll that becomes the video step), writes
-the screens and `metrics.json` into `examples/showcase/demos/acme-tour/`, and —
-only when `INWORLD_API_KEY` is set — regenerates the narration MP3s with
-Inworld TTS and rewrites those steps' `voiceover` and `captions`. `--out <dir>`
-writes somewhere else and leaves the config alone; `--no-voice` skips the
-narration. Needs Chrome and ffmpeg. Copy and hotspots are hand-written, as
-in the self-demo.
 
 ## The manual pass
 
@@ -117,8 +141,8 @@ These need eyes:
 
 Opening a demo in the editor leaves `demo.config.json` alone, and an edit
 changes only what it touched: `$schema` stays first, key order is kept, and
-unset defaults stay out (see [docs/editor.md](../docs/editor.md); the codec
-tests hold both example configs to a byte-for-byte round trip). The manual
+unset defaults stay out (see [the editor guide](https://docs.inklyai.dev/open-source/editor#your-file-keeps-its-shape); the codec
+tests hold the showcase's config to a byte-for-byte round trip). The manual
 pass does edit files, though, so after poking at the example project restore
 it:
 

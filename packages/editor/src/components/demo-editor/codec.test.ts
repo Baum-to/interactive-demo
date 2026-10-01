@@ -120,14 +120,13 @@ function withAnnotation(
 
 /** The demo configs shipped in the repo, as bytes on disk. */
 const EXAMPLES = [
-    "../../../../../examples/showcase/demos/acme-tour/demo.config.json",
-    "../../../../../examples/self-demo/demos/product-tour/demo.config.json",
+    "../../../../../examples/showcase/demos/interactive-demo/demo.config.json",
 ] as const;
 
 describe("serializeDemoConfig", () => {
     it.each(EXAMPLES)("writes %s back byte-for-byte", (relative) => {
         // The inline fixtures are small and tidy. These are the real thing:
-        // `chrome`, `chapters`, nine steps, hand-ordered keys. Opening one in
+        // `chrome`, covers, narration, a video step, hand-ordered keys. Opening one in
         // the editor and saving it must leave the file alone.
         const path = fileURLToPath(new URL(relative, import.meta.url));
         const src = readFileSync(path, "utf8");

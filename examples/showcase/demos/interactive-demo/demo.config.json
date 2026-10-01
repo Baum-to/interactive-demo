@@ -1,0 +1,283 @@
+{
+  "$schema": "https://cdn.jsdelivr.net/npm/@inkly-org/interactive-demo/dist/schema/demo.config.json",
+  "id": "showcaseDemo",
+  "version": 1,
+  "title": "Interactive demos your agent can make",
+  "subtitle": "Recorded from your real app, kept as plain files, shipped as a link or an embed.",
+  "chrome": {
+    "controls": "full",
+    "autoplay": true,
+    "branding": true
+  },
+  "steps": [
+    {
+      "kind": "cover",
+      "id": "cover-intro",
+      "widgets": [
+        {
+          "type": "headline",
+          "id": "headline-intro",
+          "title": "Interactive demos your agent can make",
+          "description": "For product marketing, onboarding, pre-sales, training and enablement. Your agent records your real app and writes the demo up, as plain files in your repo.",
+          "cta": {
+            "label": "See it",
+            "action": {
+              "type": "next"
+            },
+            "animation": "shimmer"
+          },
+          "image": {
+            "src": "assets/00-cover.webp",
+            "alt": "A finished interactive demo mid-play: a product's funnel screen with a hotspot on the funnel and the hotspot's card",
+            "naturalWidth": 1895,
+            "naturalHeight": 2173,
+            "position": "right",
+            "layout": "hero"
+          }
+        }
+      ],
+      "advance": {
+        "trigger": "click"
+      }
+    },
+    {
+      "kind": "content",
+      "id": "agent",
+      "label": "Your agent does it",
+      "background": {
+        "type": "video",
+        "src": "assets/01-agent.webm",
+        "posterSrc": "assets/01-agent-poster.webp",
+        "alt": "A Claude Code session at work: one prompt, then the agent loads the skill, runs capture start, clicks through the app, runs capture stop, writes the copy and validates it",
+        "naturalWidth": 1440,
+        "naturalHeight": 900,
+        "autoplay": true,
+        "muted": true
+      },
+      "script": "Ask your agent for a demo. It loads the skill, records your app with the CLI, then writes the copy. All of it lands as plain files in your repo.",
+      "voiceover": {
+        "src": "assets/vo-agent.mp3",
+        "duration": 9288
+      },
+      "captions": [
+        {
+          "id": "agent_c1",
+          "start": 0,
+          "end": 1701,
+          "text": "Ask your agent for a demo."
+        },
+        {
+          "id": "agent_c2",
+          "start": 1701,
+          "end": 6410,
+          "text": "It loads the skill, records your app with the CLI, then writes the copy."
+        },
+        {
+          "id": "agent_c3",
+          "start": 6410,
+          "end": 9288,
+          "text": "All of it lands as plain files in your repo."
+        }
+      ],
+      "advance": {
+        "trigger": "click"
+      },
+      "annotations": [
+        {
+          "id": "agent-prompt",
+          "type": "message",
+          "variant": "pointer",
+          "x": 0.6819,
+          "y": 0.2104,
+          "text": "One prompt. This is a real Claude Code session: it read the skill, recorded six clicks and wrote the copy itself.",
+          "anchor": "right"
+        }
+      ]
+    },
+    {
+      "kind": "content",
+      "id": "extension",
+      "label": "Or record it yourself",
+      "background": {
+        "type": "video",
+        "src": "assets/02-extension.webm",
+        "posterSrc": "assets/02-extension-poster.webp",
+        "alt": "The Interactive Demo Capture extension recording a product in Chrome: Start Recording, three clicks, and the popup counting three steps",
+        "naturalWidth": 1440,
+        "naturalHeight": 900,
+        "autoplay": true,
+        "muted": true
+      },
+      "script": "Or record it yourself. The Chrome extension turns every click in your own browser into a step.",
+      "voiceover": {
+        "src": "assets/vo-extension.mp3",
+        "duration": 6072
+      },
+      "captions": [
+        {
+          "id": "extension_c1",
+          "start": 0,
+          "end": 1436,
+          "text": "Or record it yourself."
+        },
+        {
+          "id": "extension_c2",
+          "start": 1436,
+          "end": 6072,
+          "text": "The Chrome extension turns every click in your own browser into a step."
+        }
+      ],
+      "advance": {
+        "trigger": "click"
+      },
+      "annotations": [
+        {
+          "id": "extension-counter",
+          "type": "message",
+          "variant": "pointer",
+          "x": 0.6661,
+          "y": 0.2071,
+          "text": "Or record it yourself, in your own browser. The **Interactive Demo Capture** extension turns every click into a step.",
+          "anchor": "left"
+        }
+      ]
+    },
+    {
+      "kind": "content",
+      "id": "editor",
+      "label": "Polish in the editor",
+      "background": {
+        "type": "image",
+        "src": "assets/03-editor.webp",
+        "alt": "The local editor open on the captured demo, a hotspot selected and its text being edited in the side panel",
+        "naturalWidth": 2880,
+        "naturalHeight": 1800
+      },
+      "script": "Polish it with your agent. Or, if you prefer a UI, the editor edits the same files.",
+      "voiceover": {
+        "src": "assets/vo-editor.mp3",
+        "duration": 6096
+      },
+      "captions": [
+        {
+          "id": "editor_c1",
+          "start": 0,
+          "end": 1933,
+          "text": "Polish it with your agent."
+        },
+        {
+          "id": "editor_c2",
+          "start": 1933,
+          "end": 6096,
+          "text": "Or, if you prefer a UI, the editor edits the same files."
+        }
+      ],
+      "transform": {
+        "zoom": 1.136,
+        "x": 0.5,
+        "y": 0.1667
+      },
+      "advance": {
+        "trigger": "click"
+      },
+      "annotations": [
+        {
+          "id": "editor-hotspot",
+          "type": "message",
+          "variant": "pointer",
+          "x": 0.4507,
+          "y": 0.3473,
+          "text": "Polish it with your agent: it edits the same `demo.config.json`. Prefer a UI? The editor does it too.",
+          "anchor": "bottom"
+        }
+      ]
+    },
+    {
+      "kind": "content",
+      "id": "ship",
+      "label": "Ship it anywhere",
+      "background": {
+        "type": "video",
+        "src": "assets/04-ship.webm",
+        "posterSrc": "assets/04-ship-poster.webp",
+        "alt": "Scrolling a marketing page down to the demo embedded in it",
+        "naturalWidth": 1440,
+        "naturalHeight": 900,
+        "autoplay": true,
+        "muted": true
+      },
+      "script": "Publish it for a link, or build a folder for any static host. Either way, it embeds inline or as a pop-up.",
+      "voiceover": {
+        "src": "assets/vo-ship.mp3",
+        "duration": 7920
+      },
+      "captions": [
+        {
+          "id": "ship_c1",
+          "start": 0,
+          "end": 4601,
+          "text": "Publish it for a link, or build a folder for any static host."
+        },
+        {
+          "id": "ship_c2",
+          "start": 4601,
+          "end": 7920,
+          "text": "Either way, it embeds inline or as a pop-up."
+        }
+      ],
+      "advance": {
+        "trigger": "click"
+      },
+      "annotations": [
+        {
+          "id": "ship-embed",
+          "type": "message",
+          "variant": "pointer",
+          "x": 0.5,
+          "y": 0.6441,
+          "text": "The agent's demo, live on a marketing page. `publish` prints a link; `build` writes a folder you host yourself.",
+          "anchor": "bottom"
+        }
+      ]
+    },
+    {
+      "kind": "cover",
+      "id": "cover-outro",
+      "widgets": [
+        {
+          "type": "headline",
+          "id": "headline-outro",
+          "image": {
+            "src": "assets/05-init.webp",
+            "alt": "A terminal: npx @inkly-org/interactive-demo-cli init my-demos, and the project it scaffolds",
+            "naturalWidth": 1520,
+            "naturalHeight": 528,
+            "position": "top",
+            "layout": "standard"
+          },
+          "title": "Make your first one",
+          "description": "For product marketing, onboarding, pre-sales, training and enablement.",
+          "textAlign": "middle",
+          "cta": {
+            "label": "Get started",
+            "action": {
+              "type": "url",
+              "href": "https://github.com/inkly-ai/interactive-demo#readme"
+            },
+            "animation": "shimmer"
+          },
+          "secondaryCta": {
+            "label": "Watch again",
+            "action": {
+              "type": "restart"
+            },
+            "animation": "none"
+          }
+        }
+      ],
+      "advance": {
+        "trigger": "click"
+      }
+    }
+  ]
+}

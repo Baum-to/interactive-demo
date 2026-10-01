@@ -1,0 +1,701 @@
+{
+  "note": "A Claude Code session recorded once and replayed by testbed/shoot-showcase.mjs. `framing` is the first message the session was given; `prompt` is the user request inside it.",
+  "recordedAt": "2026-10-01T01:21:11.791Z",
+  "framing": "You are Claude Code, working for a user inside their project folder:\n\n  <project>\n\nIt is an interactive-demo project (scaffolded with `interactive-demo init`); `npx interactive-demo` runs the CLI there. The project has the `interactive-demo` agent skill installed at `.claude/skills/interactive-demo/SKILL.md` — load it first by reading that file (that is how the skill reaches you here), then follow it. Your shell's working directory resets between commands, so start every Bash command with `cd <project> && `. Keep all files you create inside that folder. Nobody is at the keyboard to click in a browser window for you. Do not run `login` or `publish`. Stop any browser or server you start before you finish.\n\nThe user's message:\n\n> Make an interactive demo of our onboarding flow at http://localhost:4173/app/ — keep it local, I'll publish later.\n\nWhen you are done, reply to the user with a short summary of what you made and how to preview it.",
+  "prompt": "Make an interactive demo of our onboarding flow at http://localhost:4173/app/ — keep it local, I'll publish later.",
+  "entries": [
+    {
+      "kind": "tool",
+      "name": "Bash",
+      "input": {
+        "command": "ls -la && cat .claude/skills/interactive-demo/SKILL.md",
+        "description": "List project and read the demo skill"
+      },
+      "output": "total 32\ndrwxr-xr-x@ 9 user  wheel   288 Sep 30 20:43 .\ndrwxr-xr-x@ 3 user  wheel    96 Sep 30 20:43 ..\ndrwxr-xr-x@ 3 user  wheel    96 Sep 30 20:43 .claude\n-rw-r--r--@ 1 user  wheel    20 Sep 30 20:43 .gitignore\n-rw-r--r--@ 1 user  wheel  1403 Sep 30 20:43 README.md\ndrwxr-xr-x@ 3 user  wheel    96 Sep 30 20:43 demos\n-rw-r--r--@ 1 user  wheel   110 Sep 30 20:43 interactive-demo.json\ndrwxr-xr-x@ 4 user  wheel   128 Sep 30 20:43 node_modules\n-rw-r--r--@ 1 user  wheel   260 Sep 30 20:43 package.json\n---\nname: interactive-demo\ndescription: Build an interactive product demo from a real web app and publish it as a shareable link or an embed. Use when the user asks to record, capture, author, preview, validate, build, embed or publish a product demo or walkthrough with the interactive-demo CLI. Covers scaffolding a project, driving Chrome to capture a click-through, writing the demo up, and getting a URL.\ncompatibility: \"Needs Node 20+ and the interactive-demo CLI (npx @inkly-org/interactive-demo-cli, bin `interactive-demo`). Capture drives a local Chrome or Chromium; video steps need ffmpeg on PATH. `login`, `publish` and `embed` need an account on the hosting service — everything else works offline.\"\nlicense: MIT\nallowed-tools: Bash\n---\n\n# interactive-demo\n\n`interactive-demo` turns a click-through of a real web app into an interactive\ndemo: screenshots or short recordings, with hotspots and captions on top. The\noutput is either a link the hostin"
+    },
+    {
+      "kind": "tool",
+      "name": "Bash",
+      "input": {
+        "command": "cat README.md interactive-demo.json package.json .gitignore; find demos; ls node_modules node_modules/*; npx interactive-demo version; npx interactive-demo capture --help; npx interactive-demo capture start --help; curl -s -o /dev/null -w \"%{http_code}\\n\" http://localhost:4173/app/; which ffmpeg",
+        "description": "Inspect project, CLI help, and target app"
+      },
+      "output": "# acme-demos\n\nInteractive product demos, built with `interactive-demo`.\n\nEach folder under `demos/` is one demo: a `demo.config.json` describing\nthe steps, and the screenshots and recordings it references under\n`assets/`. The project itself is configured by `interactive-demo.json`.\n\n```bash\nnpm install\n```\n\n## Record your product\n\nNeeds Google Chrome.\n\n```bash\nnpx interactive-demo capture start https://app.example.com\n# click through the product in the window that opens\nnpx interactive-demo capture stop\n```\n\nEvery click becomes a step, with the pointer where you clicked. `stop`\nwrites the recording as a new demo under `demos/`.\n\n## Preview and edit\n\n```bash\nnpm run dev\n```\n\nOpens a local preview of every demo, with the editor at `/__demo/editor/`.\nEdits are written straight to the files in this folder.\n\n## Ship it\n\n```bash\nnpx interactive-demo login && npx interactive-demo publish\n```\n\nPuts the demo online and prints its link. Publishing again updates the same\nlink, so embeds keep working. Once the project has more than one demo, name\nit: `npx interactive-demo publish demos/<slug>`. `npx interactive-demo embed`\nprints the embed snippet.\n\n## Host it yourself instead\n\n```bash\nnpm run build\n```\n\nWrites a self-contained static folder per demo under `dist/`. Deploy it to\nany static host; the build prints the embed snippets, which are the same as\nthe published ones apart from the host.\n{\n  \"name\": \"acme-demos\",\n  \"brand\": {\n    \"name\": \"acme-demos\"\n  },\n  \"demos\": [\n    \"getting-st"
+    },
+    {
+      "kind": "tool",
+      "name": "Bash",
+      "input": {
+        "command": "curl -s http://localhost:4173/app/ | head -100; echo; cat demos/getting-started/demo.config.json; ls node_modules/@inkly-org/interactive-demo-cli; cat node_modules/@inkly-org/interactive-demo-cli/package.json",
+        "description": "Fetch app HTML and inspect starter demo and CLI package"
+      },
+      "output": "<!doctype html>\n<html lang=\"en\">\n  <head>\n    <meta charset=\"utf-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>Overview — Acme Analytics</title>\n    <link rel=\"stylesheet\" href=\"app.css\" />\n  </head>\n  <body>\n    <aside>\n      <div class=\"brand\"><span class=\"mark\">A</span><b>Acme Analytics</b></div>\n      <nav>\n        <span class=\"nav-label\">Workspace</span>\n        <a href=\"index.html\" class=\"on\"><svg viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\"><path d=\"M2 13V7M6 13V3M10 13V9M14 13V5\"/></svg> Overview</a>\n        <a href=\"funnels.html\" class=\"\"><svg viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\"><path d=\"M2 3h12l-4.5 5.5V13L6.5 11.5V8.5z\"/></svg> Funnels</a>\n        <a href=\"segments.html\" class=\"\"><svg viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\"><circle cx=\"6\" cy=\"6\" r=\"2.5\"/><path d=\"M2 13c0-2.2 1.8-3.5 4-3.5s4 1.3 4 3.5\"/><path d=\"M11 5.5a2.2 2.2 0 010 4.4M12 13c0-1.6-.6-2.6-1.6-3.2\"/></svg> Segments</a>\n        <span class=\"nav-label\" style=\"margin-top:10px\">Account</span>\n        <a href=\"settings.html\" class=\"\"><svg viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\"><circle cx=\"8\" cy=\"8\" r=\"2.3\"/><path d=\"M8 1.8v1.6M8 12.6v1.6M14.2 8h-1.6M3.4 8H1.8M12.4 3.6l-1.1 1.1M4.7 11.3l-1.1 1.1M12.4 12.4l-1.1-1.1M4.7 4.7L3.6 3.6\"/></svg> Settings</a>\n      </nav>\n      <footer>\n        <div class=\"plan\">\n          <b>Growth plan<"
+    },
+    {
+      "kind": "tool",
+      "name": "Bash",
+      "input": {
+        "command": "cd <tmp> && for p in \"\" index.html funnels.html segments.html settings.html onboarding.html welcome.html signup.html; do echo \"== $p $(curl -s -o /dev/null -w '%{http_code}' http://localhost:4173/app/$p)\"; done; curl -s http://localhost:4173/app/ | sed -n '100,400p'; curl -s http://localhost:4173/ | head -50",
+        "description": "Probe app pages for onboarding flow"
+      },
+      "output": "==  200\n== index.html 200\n== funnels.html 200\n== segments.html 200\n== settings.html 200\n== onboarding.html 404\n== welcome.html 404\n== signup.html 404\n        <div class=\"split\" style=\"margin-top:14px\">\n          <div class=\"panel\">\n            <div class=\"head\"><b>Recent reports</b><div class=\"spacer\"></div><span>4 of 37</span></div>\n            <div class=\"body\" style=\"padding-top:6px\">\n              <table>\n                <tr><th>Report</th><th>Owner</th><th class=\"num\">Last run</th></tr>\n                <tr><td><b>Weekly activation</b></td><td>Jules Rivera</td><td class=\"num\">08:15</td></tr>\n                <tr><td><b>Onboarding drop-off</b></td><td>Priya Nair</td><td class=\"num\">yesterday</td></tr>\n                <tr><td><b>Enterprise usage</b></td><td>Mo Adeyemi</td><td class=\"num\">2d ago</td></tr>\n              </table>\n            </div>\n          </div>\n          <div class=\"panel\">\n            <div class=\"head\"><b>Retention</b><span>by signup week</span></div>\n            <div class=\"body\">\n              <svg viewBox=\"0 0 292 120\" width=\"100%\" height=\"120\" role=\"img\">\n                <rect x=\"8\" y=\"8\" width=\"31\" height=\"24\" rx=\"4\" fill=\"rgb(23,21,26)\"/>\n                <rect x=\"43\" y=\"8\" width=\"31\" height=\"24\" rx=\"4\" fill=\"rgb(47,45,49)\"/>\n                <rect x=\"78\" y=\"8\" width=\"31\" height=\"24\" rx=\"4\" fill=\"rgb(70,69,72)\"/>\n                <rect x=\"113\" y=\"8\" width=\"31\" height=\"24\" rx=\"4\" fill=\"rgb(96,94,97)\"/>\n                <rect x=\"148\" y=\"8\" width=\"31\" heigh"
+    },
+    {
+      "kind": "tool",
+      "name": "Bash",
+      "input": {
+        "command": "cd <tmp> && for p in funnels.html segments.html settings.html; do echo \"===== $p\"; curl -s http://localhost:4173/app/$p | sed -e 's/<svg[^>]*>.*<\\/svg>//g' | grep -v '^<rect\\|^<text\\|^<line\\|^<path\\|<circle' | sed -n '/<main>/,$p'; done; curl -s http://localhost:4173/app/ | grep -io 'onboard[^<]*\\|<script[^>]*>' ; curl -s http://localhost:4173/ | grep -o 'href=\"[^\"]*\"' | sort -u",
+        "description": "Read main content of other app pages"
+      },
+      "output": "===== funnels.html\n    <main>\n      <header>\n        <h1>Activation funnel</h1>\n        <div class=\"search\"> Search events, users…</div>\n        \n        <div class=\"avatar\">JR</div>\n      </header>\n      <div class=\"content\">\n        <div class=\"rowline\">\n          <div>\n            <h2>Activation funnel</h2>\n            <p>Five steps · last 30 days</p>\n          </div>\n          <div class=\"spacer\"></div>\n          <a class=\"btn\" href=\"index.html\">Duplicate</a>\n          <a class=\"btn primary\" href=\"segments.html\">Save funnel</a>\n        </div>\n        <div class=\"panel\">\n          <div class=\"head\"><b>Steps</b><span>24,840 entered</span></div>\n          <div class=\"body\">\n          <div class=\"funnel-row\"><span class=\"name\">Visited site</span><span class=\"track\"><i style=\"width:100%\"></i></span><span class=\"pct\">24,840 · 100%</span></div>\n          <div class=\"funnel-row\"><span class=\"name\">Signed up</span><span class=\"track\"><i style=\"width:46%\"></i></span><span class=\"pct\">11,426 · 46%</span></div>\n          <div class=\"funnel-row\"><span class=\"name\">Connected data</span><span class=\"track\"><i style=\"width:28%\"></i></span><span class=\"pct\">6,955 · 28%</span></div>\n          <div class=\"funnel-row\"><span class=\"name\">Created a report</span><span class=\"track\"><i style=\"width:19%\"></i></span><span class=\"pct\">4,719 · 19%</span></div>\n          <div class=\"funnel-row\"><span class=\"name\">Invited a teammate</span><span class=\"track\"><i style=\"width:11%\"></i></span><span class"
+    },
+    {
+      "kind": "tool",
+      "name": "Bash",
+      "input": {
+        "command": "cd <tmp> && curl -s -w '\\n%{http_code}\\n' http://localhost:4173/app/invite.html | sed -n '/<main>/,$p' | head -80",
+        "description": "Check invite page"
+      },
+      "output": "    <main>\n      <header>\n        <h1>Workspace settings</h1>\n        <div class=\"search\"><svg width=\"14\" height=\"14\" viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\"><circle cx=\"7\" cy=\"7\" r=\"4.2\"/><path d=\"M10.2 10.2L14 14\"/></svg> Search events, users…</div>\n        \n        <div class=\"avatar\">JR</div>\n      </header>\n      <div class=\"content\">\n        <div class=\"rowline\">\n          <div>\n            <h2>Workspace settings</h2>\n            <p>acme.io · 24 seats</p>\n          </div>\n          <div class=\"spacer\"></div>\n          <a class=\"btn primary\" href=\"invite.html\">Invite teammates</a>\n        </div>\n        <div class=\"split\">\n          <div class=\"panel\">\n            <div class=\"head\"><b>General</b></div>\n            <div class=\"body\">\n              <div class=\"field\"><label>Workspace name</label><input value=\"Acme Analytics\" /></div>\n              <div class=\"field\"><label>Default timezone</label><select><option>UTC+00:00 — London</option><option>UTC−05:00 — New York</option></select></div>\n              <div class=\"field\"><label>Week starts on</label><select><option>Monday</option><option>Sunday</option></select></div>\n            </div>\n          </div>\n          <div class=\"panel\">\n            <div class=\"head\"><b>Members</b><span>24 seats</span></div>\n            <div class=\"body\" style=\"padding-top:6px\">\n              <table>\n                <tr><th>Person</th><th class=\"num\">Role</th></tr>\n                <tr><td>Jules Rivera</td><td "
+    },
+    {
+      "kind": "tool",
+      "name": "Bash",
+      "input": {
+        "command": "cd node_modules/@inkly-org/interactive-demo-cli && ls src src/* dist | head -60; grep -rn \"connectToBrowser\\|connect-to-browser\" src | head -30",
+        "description": "Locate capture connect logic in CLI source"
+      },
+      "output": "src/assets.ts\nsrc/cli.ts\nsrc/demo-id-maintenance.ts\nsrc/fs-atomic.ts\nsrc/main.ts\nsrc/media.ts\nsrc/page.ts\nsrc/player-size.ts\nsrc/project.ts\nsrc/standalone-demo.ts\nsrc/starter.ts\nsrc/workspace.ts\n\ndist:\ncapture-listener.js\ncli.js\neditor\ntemplate\n\nsrc:\nassets.ts\ncapture\ncli.ts\ncommands\ndemo-id-maintenance.ts\ndev\nfs-atomic.ts\nmain.ts\nmedia.ts\npage.ts\nplayer-size.ts\nproject.ts\npublish\nstandalone-demo.ts\nstarter.ts\ntemplate\nworkspace.ts\n\nsrc/capture:\nchrome.ts\nindex.ts\nlistener.ts\noptions.ts\noutput.ts\nprofiles.ts\nrecorder.ts\nsession.ts\nsteps.ts\n\nsrc/commands:\nbuild.ts\ncapture-listener.ts\ncapture.ts\ndev.ts\nembed.ts\ninit.ts\nlogin.ts\npublish.ts\nvalidate.ts\nversion.ts\nsrc/main.ts:247:      'connect-to-browser',\nsrc/capture/chrome.ts:518:export async function resolveBrowserWebSocketUrl(connectToBrowser: string): Promise<{\nsrc/capture/chrome.ts:522:  if (connectToBrowser.startsWith('ws://') || connectToBrowser.startsWith('wss://')) {\nsrc/capture/chrome.ts:523:    const url = new URL(connectToBrowser);\nsrc/capture/chrome.ts:525:      wsUrl: connectToBrowser,\nsrc/capture/chrome.ts:530:  const base = new URL(connectToBrowser);\nsrc/capture/index.ts:91:  --connect-to-browser <url>\nsrc/capture/index.ts:100:                          --connect-to-browser or a script driving the page.\nsrc/capture/index.ts:173:  return stringOption(args, 'connect-to-browser') ?? process.env.INTERACTIVE_DEMO_CAPTURE_BROWSER_URL;\nsrc/capture/index.ts:223:  const connectToBrowser = optionalConnectToBrowser(args);\nsr"
+    },
+    {
+      "kind": "tool",
+      "name": "Bash",
+      "input": {
+        "command": "cd node_modules/@inkly-org/interactive-demo-cli && sed -n 200,430p src/capture/index.ts; wc -l src/capture/*.ts",
+        "description": "Read capture start implementation"
+      },
+      "output": "    width: input.width,\n    height: input.height,\n    screens: [],\n    captureDir: null,\n    listenerPid: input.listenerPid,\n    listenerLogPath: null,\n    listenerReadyAt: null,\n  };\n}\n\nasync function runStart(cwd: string, args: ParsedArgs): Promise<number> {\n  const url = stringOption(args, 'url') || positional(args, 1);\n  if (!url) throw new Error(`missing <url>\\n\\n${CAPTURE_USAGE}`);\n  const parsedUrl = new URL(url);\n  if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {\n    throw new Error(`capture start needs an http(s) URL, got ${parsedUrl.protocol}`);\n  }\n  const name = stringOption(args, 'name') || parsedUrl.host.replace(/^www\\./i, '') || 'Captured demo';\n\n  const windowSize = parseWindowSizeOption(stringOption(args, 'window-size'));\n  const width = windowSize?.width ?? numberOption(args, 'width', DEFAULT_WIDTH);\n  const height = windowSize?.height ?? numberOption(args, 'height', DEFAULT_HEIGHT);\n  const timeoutMs = numberOption(args, 'timeout', DEFAULT_TIMEOUT_MS);\n  const connectToBrowser = optionalConnectToBrowser(args);\n  const autoApplyZoom = booleanOption(args, ['zoom', 'auto-apply-zoom'], true);\n  const videoRequested = booleanOption(args, ['record-video', 'video'], true);\n  const compressImages = booleanOption(args, ['compress-images', 'compress-image'], false);\n  // A person clicks through the product, so the window is visible by default.\n  // `--headless` wins only when `--headed` was not also passed.\n  const headless = booleanOption(arg"
+    },
+    {
+      "kind": "tool",
+      "name": "Bash",
+      "input": {
+        "command": "cd node_modules/@inkly-org/interactive-demo-cli && grep -n \"addEventListener\\|isTrusted\\|binding\\|Binding\" src/capture/recorder.ts | head -30; grep -n \"headless\" src/capture/chrome.ts | head",
+        "description": "Check how recorder detects clicks"
+      },
+      "output": "4: * page context back over a CDP binding, and holds anchor navigations until\n34:/** CDP binding names the page calls back into. */\n197:  document.addEventListener(\"click\", (event) => {\n205:    const hasRealPoint = event.isTrusted && (event.clientX > 0 || event.clientY > 0);\n214:  document.addEventListener(\"keydown\", (event) => {\n220:  document.addEventListener(\"input\", (event) => {\n231:  window.addEventListener(\"scroll\", onMotionScroll, true);\n232:  window.addEventListener(\"wheel\", onMotionScroll, true);\n233:  window.addEventListener(\"touchmove\", onMotionScroll, true);\n236:export async function installRecorder(cdp: Cdp, sessionId: string, withBinding = false): Promise<void> {\n237:  if (withBinding) {\n238:    await cdp.send('Runtime.addBinding', { name: RECORDER_EVENT_BINDING }, sessionId).catch(() => undefined);\n239:    await cdp.send('Runtime.addBinding', { name: RECORDER_CLICK_BINDING }, sessionId).catch(() => undefined);\n332: * The page can call the bindings with anything, so a click is only accepted\n377: * Parse a payload delivered over one of the recorder bindings into a\n381:export function parseRecorderPayload(bindingName: string, payload: unknown): RecorderEvent | null {\n382:  if (bindingName !== RECORDER_EVENT_BINDING && bindingName !== RECORDER_CLICK_BINDING) return null;\n387:    if (bindingName === RECORDER_CLICK_BINDING) {\n32:// Capture at Retina-equivalent pixel density: headless Chrome's native DPR is\n265: * anything is still alive after a short grace period (he"
+    },
+    {
+      "kind": "tool",
+      "name": "Bash",
+      "input": {
+        "command": "npx interactive-demo capture start http://localhost:4173/app/ --name \"Onboarding\" --headless 2>&1",
+        "description": "Start a headless capture session",
+        "timeout": 180000
+      },
+      "output": "{\n  \"ok\": true,\n  \"session\": {\n    \"id\": \"045aa259-63f3-42f0-902b-e871cafa30c4\",\n    \"stateFile\": \"~/.interactive-demo/capture/sessions/045aa259-63f3-42f0-902b-e871cafa30c4.json\",\n    \"createdAt\": \"2026-10-01T00:43:59.428Z\"\n  },\n  \"browser\": {\n    \"pid\": 72587,\n    \"debuggingUrl\": \"http://127.0.0.1:57311\",\n    \"webSocketDebuggerUrl\": \"ws://127.0.0.1:57311/devtools/browser/0d08df7e-7018-48e6-89d4-8228e30fc084\",\n    \"headless\": true,\n    \"attached\": false,\n    \"profile\": null\n  },\n  \"tab\": {\n    \"targetId\": \"1AE607D6E0A963941A2E457BC0886D04\",\n    \"url\": \"http://localhost:4173/app/\"\n  },\n  \"capture\": {\n    \"name\": \"Onboarding\",\n    \"video\": true,\n    \"videoDisabledReason\": null,\n    \"autoApplyZoom\": true,\n    \"window\": {\n      \"width\": 1440,\n      \"height\": 900\n    },\n    \"stepCount\": 0,\n    \"listenerPid\": 72614,\n    \"listenerReadyAt\": \"2026-10-01T00:43:59.539Z\"\n  },\n  \"next\": \"Click through the product in the Chrome window, then run `interactive-demo capture stop`. Clicks that follow scrolling or typing are recorded as short videos; other clicks as stills.\"\n}"
+    },
+    {
+      "kind": "text",
+      "text": "Now a driver script that clicks via CDP trusted mouse events."
+    },
+    {
+      "kind": "tool",
+      "name": "Write",
+      "input": {
+        "file_path": ".capture-drive.mjs",
+        "content": "// Drives a capture session over CDP with trusted mouse clicks.\n// usage: node .capture-drive.mjs <debuggingUrl> <targetId> <selector-or-text>...\nimport WebSocket from './node_modules/@inkly-org/interactive-demo-cli/node_modules/ws/wrapper.mjs';\n\nconst [debugUrl, targetId, ...clicks] = process.argv.slice(2);\nconst list = await (await fetch(`${debugUrl}/json/list`)).json();\nconst target = list.find((t) => t.id === targetId);\nif (!target) throw new Error('target not found');\nconst ws = new WebSocket(target.webSocketDebuggerUrl);\nawait new Promise((r) => ws.once('open', r));\nlet id = 0;\nconst pending = new Map();\nws.on('message', (m) => {\n  const msg = JSON.parse(m);\n  if (msg.id && pending.has(msg.id)) { pending.get(msg.id)(msg); pending.delete(msg.id); }\n});\nconst send = (method, params = {}) => new Promise((res, rej) => {\n  const i = ++id;\n  pending.set(i, (msg) => (msg.error ? rej(new Error(JSON.stringify(msg.error))) : res(msg.result)));\n  ws.send(JSON.stringify({ id: i, method, params }));\n});\nconst sleep = (ms) => new Promise((r) => setTimeout(r, ms));\n\nfor (const spec of clicks) {\n  // spec: \"text:<button text>\" or a CSS selector\n  const expr = spec.startsWith('text:')\n    ? `(() => { const t = ${JSON.stringify(spec.slice(5))}; const el = [...document.querySelectorAll('a,button')].find(e => e.textContent.trim() === t && e.offsetParent !== null); if (!el) return null; el.scrollIntoView({block:'nearest'}); const r = el.getBoundingClientRect(); return {x: r.x + r.width/2, y: r.y + r.height/2, url: location.href}; })()`\n    : `(() => { const el = document.querySelector(${JSON.stringify(spec)}); if (!el) return null; el.scrollIntoView({block:'nearest'}); const r = el.getBoundingClientRect(); return {x: r.x + r.width/2, y: r.y + r.height/2, url: location.href}; })()`;\n  let pt = null;\n  for (let tries = 0; tries < 20 && !pt; tries++) {\n    const res = await send('Runtime.evaluate', { expression: expr, returnByValue: true });\n    pt = res.result.value;\n    if (!pt) await sleep(250);\n  }\n  if (!pt) throw new Error(`could not find ${spec}`);\n  console.log(`click ${spec} at ${Math.round(pt.x)},${Math.round(pt.y)} on ${pt.url}`);\n  await send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: pt.x, y: pt.y });\n  await sleep(150);\n  await send('Input.dispatchMouseEvent', { type: 'mousePressed', x: pt.x, y: pt.y, button: 'left', clickCount: 1 });\n  await send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: pt.x, y: pt.y, button: 'left', clickCount: 1 });\n  await sleep(2500);\n}\nws.close();\n"
+      },
+      "output": "File created successfully at: .capture-drive.mjs (file state is current in your context — no need to Read it back)"
+    },
+    {
+      "kind": "tool",
+      "name": "Bash",
+      "input": {
+        "command": "ls node_modules/@inkly-org/interactive-demo-cli/node_modules/ws/ 2>&1; ls node_modules/@inkly-org/interactive-demo-cli/node_modules | head -40",
+        "description": "Locate the ws package"
+      },
+      "output": "ls: node_modules/@inkly-org/interactive-demo-cli/node_modules/ws/: No such file or directory"
+    },
+    {
+      "kind": "tool",
+      "name": "Bash",
+      "input": {
+        "command": "node --version; node -e \"console.log(typeof WebSocket)\"; ls -la node_modules/@inkly-org/",
+        "description": "Check Node version and global WebSocket"
+      },
+      "output": "v22.22.3\nfunction\ntotal 0\ndrwxr-xr-x@ 3 user  wheel   96 Sep 30 20:43 .\ndrwxr-xr-x@ 4 user  wheel  128 Sep 30 20:43 ..\nlrwxr-xr-x@ 1 user  wheel   62 Sep 30 20:43 interactive-demo-cli -> ~/Documents/GitHub/interactive-demo/packages/cli"
+    },
+    {
+      "kind": "text",
+      "text": "Switching the script to Node's built-in WebSocket."
+    },
+    {
+      "kind": "tool",
+      "name": "Bash",
+      "input": {
+        "command": "python3 - <<'EOF'\np='.capture-drive.mjs'\ns=open(p).read()\ns=s.replace(\"import WebSocket from './node_modules/@inkly-org/interactive-demo-cli/node_modules/ws/wrapper.mjs';\\n\",\"\")\ns=s.replace(\"await new Promise((r) => ws.once('open', r));\",\"await new Promise((r) => ws.addEventListener('open', r, { once: true }));\")\ns=s.replace(\"ws.on('message', (m) => {\\n  const msg = JSON.parse(m);\",\"ws.addEventListener('message', (ev) => {\\n  const msg = JSON.parse(ev.data);\")\nopen(p,'w').write(s)\nEOF\nnode .capture-drive.mjs http://127.0.0.1:57311 1AE607D6E0A963941A2E457BC0886D04 \"text:New funnel\" \"text:Save funnel\" \"text:New segment\" \"text:Invite teammates\" \"text:Send invite\" \".cards .card\" && npx interactive-demo capture status",
+        "description": "Drive the onboarding click-through and check status",
+        "timeout": 120000
+      },
+      "output": "click text:New funnel at 1367,107 on http://localhost:4173/app/\nclick text:Save funnel at 1365,107 on http://localhost:4173/app/funnels.html\nclick text:New segment at 1359,107 on http://localhost:4173/app/segments.html\nclick text:Invite teammates at 1348,107 on http://localhost:4173/app/settings.html\nclick text:Send invite at 881,593 on http://localhost:4173/app/invite.html\nclick .cards .card at 394,204 on http://localhost:4173/app/index.html\n{\n  \"ok\": true,\n  \"session\": {\n    \"id\": \"045aa259-63f3-42f0-902b-e871cafa30c4\",\n    \"name\": \"Onboarding\",\n    \"url\": \"http://localhost:4173/app/\"\n  },\n  \"capture\": {\n    \"ready\": true,\n    \"browserAlive\": true,\n    \"listenerReadyAt\": \"2026-10-01T00:43:59.539Z\",\n    \"stepCount\": 6,\n    \"stepLabels\": [\n      \"New funnel\",\n      \"Save funnel\",\n      \"New segment\",\n      \"Invite teammates\",\n      \"Send invite\",\n      \"48,210\"\n    ],\n    \"lastLabel\": \"48,210\",\n    \"steps\": [\n      {\n        \"index\": 1,\n        \"label\": \"New funnel\",\n        \"url\": \"http://localhost:4173/app/\",\n        \"kind\": \"image\"\n      },\n      {\n        \"index\": 2,\n        \"label\": \"Save funnel\",\n        \"url\": \"http://localhost:4173/app/funnels.html\",\n        \"kind\": \"image\"\n      },\n      {\n        \"index\": 3,\n        \"label\": \"New segment\",\n        \"url\": \"http://localhost:4173/app/segments.html\",\n        \"kind\": \"image\"\n      },\n      {\n        \"index\": 4,\n        \"label\": \"Invite teammates\",\n        \"url\": \"http://localhost:4173/app/settings.html\",\n        \"kind\": "
+    },
+    {
+      "kind": "tool",
+      "name": "Bash",
+      "input": {
+        "command": "npx interactive-demo capture stop 2>&1; rm .capture-drive.mjs; ps -p 72587,72614 -o pid,comm 2>&1; find demos/onboarding; cat interactive-demo.json",
+        "description": "Stop capture, clean up driver, and inspect output",
+        "timeout": 180000
+      },
+      "output": "{\n  \"ok\": true,\n  \"session\": {\n    \"id\": \"045aa259-63f3-42f0-902b-e871cafa30c4\"\n  },\n  \"output\": {\n    \"demoDir\": \"demos/onboarding\",\n    \"slug\": \"onboarding\",\n    \"id\": \"LmozFavMyhgK\",\n    \"registered\": true,\n    \"stepCount\": 6,\n    \"stepLabels\": [\n      \"New funnel\",\n      \"Save funnel\",\n      \"New segment\",\n      \"Invite teammates\",\n      \"Send invite\",\n      \"48,210\"\n    ]\n  },\n  \"next\": \"Preview it: interactive-demo dev  (then open /onboarding/)\"\n}\n  PID COMM\ndemos/onboarding\ndemos/onboarding/demo.config.json\ndemos/onboarding/assets\ndemos/onboarding/assets/screen-006.png\ndemos/onboarding/assets/screen-005.png\ndemos/onboarding/assets/screen-004.png\ndemos/onboarding/assets/screen-001.png\ndemos/onboarding/assets/screen-003.png\ndemos/onboarding/assets/screen-002.png\n{\n  \"name\": \"acme-demos\",\n  \"demos\": [\n    \"getting-started\",\n    \"onboarding\"\n  ],\n  \"brand\": {\n    \"name\": \"acme-demos\"\n  }\n}"
+    },
+    {
+      "kind": "tool",
+      "name": "Bash",
+      "input": {
+        "command": "cat demos/onboarding/demo.config.json",
+        "description": "Read the captured demo config"
+      },
+      "output": "{\n  \"id\": \"LmozFavMyhgK\",\n  \"version\": 1,\n  \"title\": \"Onboarding\",\n  \"chrome\": {\n    \"hideHeader\": false,\n    \"hideControls\": false,\n    \"mobileFooterMessage\": true,\n    \"autoplay\": false,\n    \"branding\": true\n  },\n  \"chapters\": [],\n  \"steps\": [\n    {\n      \"kind\": \"content\",\n      \"id\": \"s1\",\n      \"background\": {\n        \"type\": \"image\",\n        \"src\": \"assets/screen-001.png\",\n        \"naturalWidth\": 1440,\n        \"naturalHeight\": 900,\n        \"alt\": \"Overview — Acme Analytics\",\n        \"sourceUrl\": \"http://localhost:4173/app/\",\n        \"title\": \"Overview — Acme Analytics\",\n        \"objectFit\": \"cover\"\n      },\n      \"transform\": {\n        \"zoom\": 1.35,\n        \"x\": 0.9989,\n        \"y\": 0.0137\n      },\n      \"advance\": {\n        \"trigger\": \"click\"\n      },\n      \"annotations\": [\n        {\n          \"id\": \"s1_cursor\",\n          \"type\": \"message\",\n          \"variant\": \"cursor\",\n          \"x\": 0.9486111111111111,\n          \"y\": 0.11888888888888889,\n          \"text\": \"Click on \\\"New funnel\\\"\",\n          \"advancesStep\": true,\n          \"textAlign\": \"left\",\n          \"anchor\": \"auto\",\n          \"showNavigation\": true,\n          \"showMessage\": false\n        }\n      ]\n    },\n    {\n      \"kind\": \"content\",\n      \"id\": \"s2\",\n      \"background\": {\n        \"type\": \"image\",\n        \"src\": \"assets/screen-002.png\",\n        \"naturalWidth\": 1440,\n        \"naturalHeight\": 900,\n        \"alt\": \"Funnels — Acme Analytics\",\n        \"sourceUrl\": \"http://localhost:4173/app/funnels.html\",\n        \"t"
+    },
+    {
+      "kind": "tool",
+      "name": "Read",
+      "input": {
+        "file_path": "demos/onboarding/assets/screen-005.png"
+      },
+      "output": ""
+    },
+    {
+      "kind": "tool",
+      "name": "Bash",
+      "input": {
+        "command": "ls ~/Documents/GitHub/interactive-demo/docs/ 2>/dev/null; grep -n \"advancesStep\\|showMessage\\|^### \\|branding\" ~/Documents/GitHub/interactive-demo/docs/schema.md 2>/dev/null | head -60",
+        "description": "Check schema docs for field names"
+      },
+      "output": "README.md\narchitecture.md\nauthoring.md\ncapture.md\ncli.md\neditor.md\nembedding.md\nimages\nruntime.md\nschema.md\n24:| `chrome` | [chrome](#chrome) |  | Default `{\"hideHeader\":false,\"hideControls\":false,\"mobileFooterMessage\":true,\"autoplay\":false,\"branding\":true}`. |\n29:### background\n41:### theme\n66:### chrome\n75:| `branding` | boolean |  | Default `true`. |\n77:### aspectRatio\n84:### chapters\n92:### steps (kind = `content`)\n172:| `showMessage` | boolean |  |  |\n173:| `advancesStep` | boolean |  | Default `true`. |\n223:### steps (kind = `cover`)"
+    },
+    {
+      "kind": "tool",
+      "name": "Bash",
+      "input": {
+        "command": "sed -n 84,300p ~/Documents/GitHub/interactive-demo/docs/schema.md",
+        "description": "Read steps and annotation schema"
+      },
+      "output": "### chapters\n\n| field | type | required | notes |\n|---|---|---|---|\n| `id` | string | yes |  |\n| `title` | string | yes |  |\n| `stepIds` | string[] | yes |  |\n\n### steps (kind = `content`)\n\n| field | type | required | notes |\n|---|---|---|---|\n| `kind` | `\"content\"` |  | Default `\"content\"`. |\n| `id` | string | yes |  |\n| `label` | string |  |  |\n| `duration` | number |  |  |\n| `background` | [background (type = `image`)](#background-type--image) \\| [background (type = `video`)](#background-type--video) | yes |  |\n| `script` | string |  |  |\n| `voiceover` | [voiceover](#voiceover) |  |  |\n| `transform` | [transform](#transform) |  |  |\n| `advance` | [advance](#advance) |  | Default `{\"trigger\":\"auto\"}`. |\n| `annotations` | [annotations (type = `message`)](#annotations-type--message) \\| [annotations (type = `blur`)](#annotations-type--blur) \\| [annotations (type = `text`)](#annotations-type--text)[] |  | Default `[]`. |\n| `captions` | [captions](#captions)[] |  |  |\n\n#### background (type = `image`)\n\n| field | type | required | notes |\n|---|---|---|---|\n| `type` | `\"image\"` | yes |  |\n| `src` | string | yes |  |\n| `naturalWidth` | number | yes |  |\n| `naturalHeight` | number | yes |  |\n| `alt` | string |  |  |\n| `sourceUrl` | string |  |  |\n| `title` | string |  |  |\n| `objectFit` | `\"contain\"` \\| `\"cover\"` \\| `\"fill\"` |  |  |\n| `objectPosition` | `\"left top\"` \\| `\"center top\"` \\| `\"right top\"` \\| `\"left center\"` \\| `\"center center\"` \\| `\"right center\"` \\| `\"left bottom\"` \\| `"
+    },
+    {
+      "kind": "tool",
+      "name": "Read",
+      "input": {
+        "file_path": "demos/onboarding/assets/screen-006.png"
+      },
+      "output": ""
+    },
+    {
+      "kind": "text",
+      "text": "Capture looks good. Now writing the real copy, cover, chapters, outro and theme."
+    },
+    {
+      "kind": "tool",
+      "name": "Bash",
+      "input": {
+        "command": "python3 - <<'EOF'\nimport json\np='demos/onboarding/demo.config.json'\nc=json.load(open(p))\nsteps={s['id']:s for s in c['steps']}\n\ndef cur(sid, label, text):\n    s=steps[sid]; s['label']=label\n    a=s['annotations'][0]; a['text']=text; a['showMessage']=True\n    return s\n\ncur('s1','Start a funnel',\"Your workspace opens on **Overview**: active users, activation and revenue at a glance. Start onboarding by building your first funnel. Click **New funnel**.\")\nsteps['s1'].pop('transform',None)\nsteps['s1']['script']=\"Overview is home base. From here, the first thing to set up is a funnel.\"\ncur('s2','Save the funnel',\"Acme maps the five activation steps from your events automatically, and flags the biggest drop-off for you. Looks right? Click **Save funnel**.\")\nsteps['s2'].pop('transform',None)\nsteps['s2']['script']=\"The activation funnel shows where new users stall, from first visit to inviting a teammate.\"\ncur('s3','Build a segment',\"Saved funnels feed **Segments**: reusable audiences like *Trial, day 3* or *Churn risk* that the whole team can use. Click **New segment**.\")\nsteps['s3'].pop('transform',None)\nsteps['s3']['script']=\"Segments turn the people in your funnel into audiences you can act on.\"\ncur('s4','Invite your team',\"Your data sources are connected and syncing. The last onboarding step: bring your team in. Click **Invite teammates**.\")\nsteps['s4']['script']=\"Workspace settings hold members, seats and connected sources.\"\ncur('s5','Send the invite',\"Add teammates by email and pick a role. Editors can build reports from day one. Click **Send invite**.\")\nsteps['s5']['transform']={\"zoom\":1.35,\"x\":0.5,\"y\":0.5}\nsteps['s5']['script']=\"Invites land teammates in this same workspace, with the funnel and segments you just set up.\"\n\ns6=steps['s6']; s6['label']=\"You're set up\"; s6.pop('transform',None)\ns6['script']=\"Back on Overview, with a funnel, a segment and your team in place.\"\ns6['annotations']=[{\n  \"id\":\"s6_area\",\"type\":\"message\",\"variant\":\"area\",\n  \"x\":0.1757,\"y\":0.1611,\"w\":0.8104,\"h\":0.1311,\n  \"anchor\":\"bottom\",\"showMessage\":True,\"advancesStep\":True,\"showNavigation\":True,\n  \"text\":\"That's onboarding done. These numbers now track the funnel you built, and your teammates see the same view the moment they accept.\",\n  \"nextButton\":{\"label\":\"Finish\"}\n}]\n\ncover={\"kind\":\"cover\",\"id\":\"cover-intro\",\"label\":\"Intro\",\"widgets\":[{\n  \"type\":\"headline\",\"id\":\"headline-intro\",\n  \"title\":\"Get Acme Analytics set up in under two minutes\",\n  \"description\":\"Build your first funnel, save a segment and invite your team. Five clicks, all in the product.\",\n  \"textAlign\":\"middle\",\n  \"cta\":{\"label\":\"Start the tour\",\"action\":{\"type\":\"next\"},\"animation\":\"shimmer\"}}],\n  \"advance\":{\"trigger\":\"click\"}}\noutro={\"kind\":\"cover\",\"id\":\"cover-outro\",\"label\":\"Outro\",\"widgets\":[{\n  \"type\":\"headline\",\"id\":\"headline-outro\",\n  \"title\":\"Your workspace is ready\",\n  \"description\":\"Funnel saved, segment built, team invited. Now see where your users drop off.\",\n  \"textAlign\":\"middle\",\n  \"cta\":{\"label\":\"Open Acme Analytics\",\"action\":{\"type\":\"url\",\"href\":\"http://localhost:4173/app/\",\"target\":\"_blank\"},\"animation\":\"shimmer\"},\n  \"secondaryCta\":{\"label\":\"Replay\",\"action\":{\"type\":\"restart\"},\"animation\":\"none\",\"background\":\"#ffffff\",\"textColor\":\"#17151a\"}}],\n  \"advance\":{\"trigger\":\"click\"}}\n\nc['title']=\"Acme Analytics onboarding\"\nc['theme']={\"tokens\":{\"primary\":\"#17151a\",\"secondary\":\"#f6f6f4\",\"font\":\"-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif\",\"radius\":\"10px\"}}\nc['chapters']=[\n  {\"id\":\"funnel\",\"title\":\"Build your first funnel\",\"stepIds\":[\"s1\",\"s2\"]},\n  {\"id\":\"segment\",\"title\":\"Save a segment\",\"stepIds\":[\"s3\"]},\n  {\"id\":\"team\",\"title\":\"Invite your team\",\"stepIds\":[\"s4\",\"s5\",\"s6\"]},\n]\nc['steps']=[cover]+[steps[k] for k in ['s1','s2','s3','s4','s5','s6']]+[outro]\nout={\"$schema\":\"https://cdn.jsdelivr.net/npm/@inkly-org/interactive-demo/dist/schema/demo.config.json\"}\nfor k in ['id','version','title','theme','chrome','chapters','steps']: out[k]=c[k]\njson.dump(out,open(p,'w'),indent=2,ensure_ascii=False); open(p,'a').write('\\n')\nEOF\nnpx interactive-demo validate --strict",
+        "description": "Author the demo config and validate"
+      },
+      "output": "interactive-demo validate passed (0 errors, 0 warnings)"
+    },
+    {
+      "kind": "tool",
+      "name": "Bash",
+      "input": {
+        "command": "python3 - <<'EOF'\nimport json\np='demos/onboarding/demo.config.json'\nc=json.load(open(p))\nw=c['steps'][-1]['widgets'][0]\nw['cta']={\"label\":\"Replay the tour\",\"action\":{\"type\":\"restart\"},\"animation\":\"shimmer\"}\nw.pop('secondaryCta',None)\njson.dump(c,open(p,'w'),indent=2,ensure_ascii=False); open(p,'a').write('\\n')\nEOF\nnpx interactive-demo validate --strict && (npx interactive-demo dev --port 3917 > <tmp> 2>&1 &) ; sleep 4; curl -s -o /dev/null -w \"%{http_code}\\n\" http://localhost:3917/onboarding/; cat <tmp>",
+        "description": "Fix outro CTA, validate, start preview server"
+      },
+      "output": "interactive-demo validate passed (0 errors, 0 warnings)\n200\n\n  interactive-demo dev running at http://localhost:3917/\n  project: acme-demos\n  demos: 2\n  demos:\n    http://localhost:3917/getting-started/\n    http://localhost:3917/onboarding/\n  editor: http://localhost:3917/__demo/editor/"
+    },
+    {
+      "kind": "tool",
+      "name": "mcp__Claude_Browser__browser_batch",
+      "input": {
+        "actions": [
+          {
+            "name": "navigate",
+            "input": {
+              "url": "http://localhost:3917/onboarding/"
+            }
+          },
+          {
+            "name": "computer",
+            "input": {
+              "action": "wait",
+              "duration": 2
+            }
+          },
+          {
+            "name": "computer",
+            "input": {
+              "action": "screenshot",
+              "scale": 0.5
+            }
+          }
+        ]
+      },
+      "output": "[navigate] navigated to http://localhost:3917/onboarding/\n\n\nTab Context:\n- Executed on tabId: tab-3\n- Available tabs:\n  • tabId tab-3: \"Acme Analytics onboarding\" (\"http://localhost:3917/onboarding/\")\n[computer:wait] waited 2s\n\n\nTab Context:\n- Executed on tabId: tab-3\n- Available tabs:\n  • tabId tab-3: \"Acme Analytics onboarding\" (\"http://localhost:3917/onboarding/\")\n[computer:screenshot] Screenshot size: 400x682 0.5-scale view; coordinate frame: 800x1365.\n\n\nTab Context:\n- Executed on tabId: tab-3\n- Available tabs:\n  • tabId tab-3: \"Acme Analytics onboarding\" (\"http://localhost:3917/onboarding/\")\n[Image: source: ~/.claude/projects/-Users-user-My-project/1c51566f-6427-4537-808f-df1e3928e8b2/tool-results/mcp-Claude_Browser-blob-1790815538379-bjqfre.jpg]"
+    },
+    {
+      "kind": "tool",
+      "name": "mcp__Claude_Browser__browser_batch",
+      "input": {
+        "actions": [
+          {
+            "name": "resize_window",
+            "input": {
+              "width": 1280,
+              "height": 860
+            }
+          },
+          {
+            "name": "navigate",
+            "input": {
+              "url": "http://localhost:3917/onboarding/"
+            }
+          },
+          {
+            "name": "computer",
+            "input": {
+              "action": "wait",
+              "duration": 2
+            }
+          },
+          {
+            "name": "find",
+            "input": {
+              "query": "Start the tour"
+            }
+          }
+        ]
+      },
+      "output": "[resize_window] Viewport set to 1280x860 on this tab (scaled down to fit if larger than the pane). Reset it with preset \"desktop\" as soon as you finish testing; the desktop app also clears a size you set when your turn ends or the pane's width changes, so set it again if you still need it. If the user wants to keep a phone or tablet size after your turn, they can pick Mobile or Tablet in the pane's Viewport menu; a custom size you simply set again next turn.\n\n\nTab Context:\n- Executed on tabId: tab-3\n- Available tabs:\n  • tabId tab-3: \"Acme Analytics onboarding\" (\"http://localhost:3917/onboarding/\")\n- Viewport: emulating 1280x860 (you set this; reset it with preset \"desktop\" when you finish testing; the app also clears it when your turn ends or the pane's width changes)\n[navigate] navigated to http://localhost:3917/onboarding/\n\n\nTab Context:\n- Executed on tabId: tab-3\n- Available tabs:\n  • tabId tab-3: \"Acme Analytics onboarding\" (\"http://localhost:3917/onboarding/\")\n- Viewport: emulating 1280x860 (you set this; reset it with preset \"desktop\" when you finish testing; the app also clears it when your turn ends or the pane's width changes)\n[computer:wait] waited 2s\n\n\nTab Context:\n- Executed on tabId: tab-3\n- Available tabs:\n  • tabId tab-3: \"Acme Analytics onboarding\" (\"http://localhost:3917/onboarding/\")\n- Viewport: emulating 1280x860 (you set this; reset it with preset \"desktop\" when you finish testing; the app also clears it when your turn ends or the pane's width changes)\n[f"
+    },
+    {
+      "kind": "tool",
+      "name": "mcp__Claude_Browser__browser_batch",
+      "input": {
+        "actions": [
+          {
+            "name": "computer",
+            "input": {
+              "action": "left_click",
+              "ref": "ref_12"
+            }
+          },
+          {
+            "name": "computer",
+            "input": {
+              "action": "wait",
+              "duration": 2
+            }
+          },
+          {
+            "name": "computer",
+            "input": {
+              "action": "screenshot",
+              "scale": 0.6
+            }
+          }
+        ]
+      },
+      "output": "[computer:left_click] left_click at (640, 571) [ref_12]\n\n\nTab Context:\n- Executed on tabId: tab-3\n- Available tabs:\n  • tabId tab-3: \"Acme Analytics onboarding\" (\"http://localhost:3917/onboarding/\")\n- Viewport: emulating 1280x860 (you set this; reset it with preset \"desktop\" when you finish testing; the app also clears it when your turn ends or the pane's width changes)\n[computer:wait] waited 2s\n\n\nTab Context:\n- Executed on tabId: tab-3\n- Available tabs:\n  • tabId tab-3: \"Acme Analytics onboarding\" (\"http://localhost:3917/onboarding/\")\n- Viewport: emulating 1280x860 (you set this; reset it with preset \"desktop\" when you finish testing; the app also clears it when your turn ends or the pane's width changes)\n[computer:screenshot] Screenshot size: 480x322 0.6-scale view; coordinate frame: 800x537.\n\n\nTab Context:\n- Executed on tabId: tab-3\n- Available tabs:\n  • tabId tab-3: \"Acme Analytics onboarding\" (\"http://localhost:3917/onboarding/\")\n- Viewport: emulating 1280x860 (you set this; reset it with preset \"desktop\" when you finish testing; the app also clears it when your turn ends or the pane's width changes)\n[Image: source: ~/.claude/projects/-Users-user-My-project/1c51566f-6427-4537-808f-df1e3928e8b2/tool-results/mcp-Claude_Browser-blob-1790815547864-jjdrqg.jpg]"
+    },
+    {
+      "kind": "tool",
+      "name": "mcp__Claude_Browser__browser_batch",
+      "input": {
+        "actions": [
+          {
+            "name": "computer",
+            "input": {
+              "action": "key",
+              "text": "ArrowRight",
+              "repeat": 5
+            }
+          },
+          {
+            "name": "computer",
+            "input": {
+              "action": "wait",
+              "duration": 2
+            }
+          },
+          {
+            "name": "computer",
+            "input": {
+              "action": "screenshot",
+              "scale": 0.6
+            }
+          }
+        ]
+      },
+      "output": "[computer:key] pressed ArrowRight x5\n\n\nTab Context:\n- Executed on tabId: tab-3\n- Available tabs:\n  • tabId tab-3: \"Acme Analytics onboarding\" (\"http://localhost:3917/onboarding/\")\n- Viewport: emulating 1280x860 (you set this; reset it with preset \"desktop\" when you finish testing; the app also clears it when your turn ends or the pane's width changes)\n[computer:wait] waited 2s\n\n\nTab Context:\n- Executed on tabId: tab-3\n- Available tabs:\n  • tabId tab-3: \"Acme Analytics onboarding\" (\"http://localhost:3917/onboarding/\")\n- Viewport: emulating 1280x860 (you set this; reset it with preset \"desktop\" when you finish testing; the app also clears it when your turn ends or the pane's width changes)\n[computer:screenshot] Screenshot size: 480x322 0.6-scale view; coordinate frame: 800x537.\n\n\nTab Context:\n- Executed on tabId: tab-3\n- Available tabs:\n  • tabId tab-3: \"Acme Analytics onboarding\" (\"http://localhost:3917/onboarding/\")\n- Viewport: emulating 1280x860 (you set this; reset it with preset \"desktop\" when you finish testing; the app also clears it when your turn ends or the pane's width changes)\n[Image: source: ~/.claude/projects/-Users-user-My-project/1c51566f-6427-4537-808f-df1e3928e8b2/tool-results/mcp-Claude_Browser-blob-1790815556051-ezriu1.jpg]"
+    },
+    {
+      "kind": "text",
+      "text": "The final step renders correctly too. Cleaning up the browser tab and dev server."
+    },
+    {
+      "kind": "tool",
+      "name": "mcp__Claude_Browser__resize_window",
+      "input": {
+        "preset": "desktop"
+      },
+      "output": "Viewport emulation cleared; the tab is back to the pane's responsive size (desktop).\n\n\nTab Context:\n- Executed on tabId: tab-3\n- Available tabs:\n  • tabId tab-3: \"Acme Analytics onboarding\" (\"http://localhost:3917/onboarding/\")"
+    },
+    {
+      "kind": "tool",
+      "name": "mcp__Claude_Browser__tabs_close",
+      "input": {
+        "tabId": "tab-3"
+      },
+      "output": "Closed tab tab-3."
+    },
+    {
+      "kind": "tool",
+      "name": "Bash",
+      "input": {
+        "command": "pkill -f \"interactive-demo dev --port 3917\"; sleep 1; pgrep -fl \"interactive-demo dev|interactive-demo/capture|remote-debugging-port=57311\" || echo \"nothing running\"; ls -a && npx interactive-demo capture status 2>&1 | head -5",
+        "description": "Stop dev server and confirm nothing is left running"
+      },
+      "output": "60597 node <tmp> dev --port 4731\n.\n..\n.claude\n.gitignore\nREADME.md\ndemos\ninteractive-demo.json\nnode_modules\npackage.json\ninteractive-demo capture failed: No capture session is running. Start one with `interactive-demo capture start <url>`."
+    },
+    {
+      "kind": "text",
+      "text": "I made the onboarding demo. It's local only: nothing was published and I didn't log in.\n\n**What it covers.** I couldn't find a dedicated onboarding page in the app, so I recorded the path through it that matches your activation funnel. It's 8 steps:\n\n1. **Cover:** \"Get Acme Analytics set up in under two minutes\"\n2. **Overview:** click \"New funnel\"\n3. **Activation funnel:** click \"Save funnel\"\n4. **Segments:** click \"New segment\"\n5. **Workspace settings:** click \"Invite teammates\"\n6. **Invite modal:** click \"Send invite\" (zoomed in on the modal)\n7. **Back on Overview:** the KPI cards are highlighted with a \"That's onboarding done\" message\n8. **Closing screen:** \"Your workspace is ready\", with a Replay button\n\nEach step's \"Click on X\" text from the recording is replaced with copy that says why you'd click it. The steps are grouped into three chapters: build your first funnel, save a segment, invite your team. The theme uses Acme's ink black and the app's system font. The screens are real screenshots of `http://localhost:4173/app/` at 1440×900. Validation passes with no errors or warnings, and I clicked through it in a browser to check that it renders.\n\n**To preview it:**\n```sh\ncd acme-demos\nnpm run dev        # then open http://localhost:3000/onboarding/\n```\nYou can edit the text in the browser editor at `/__demo/editor/`, or directly in `demos/onboarding/demo.config.json`. When you're ready to publish, run `npx interactive-demo login && npx interactive-demo publish demos/onboarding`.\n\n**Things to check:**\n- The demo header shows the project name \"acme-demos\". To show \"Acme Analytics\", change `brand.name` in `interactive-demo.json`. That setting applies to every demo in the project, so I didn't change it.\n- If your real onboarding is a different flow, such as a signup wizard on another URL, tell me where it is and I'll record that one instead.\n\nThe recording browser and my preview server are both stopped. I left one `interactive-demo dev` server running on port 4731 because I didn't start it.\n\nFiles are in `acme-demos/`:\n- `demos/onboarding/demo.config.json`\n- `demos/onboarding/assets/screen-001.png` to `screen-006.png`\n- `interactive-demo.json` (the demo was added to its list automatically)"
+    }
+  ],
+  "clicks": [
+    "text:New funnel",
+    "text:Save funnel",
+    "text:New segment",
+    "text:Invite teammates",
+    "text:Send invite",
+    ".cards .card"
+  ],
+  "slug": "onboarding",
+  "config": {
+    "$schema": "https://cdn.jsdelivr.net/npm/@inkly-org/interactive-demo/dist/schema/demo.config.json",
+    "id": "LmozFavMyhgK",
+    "version": 1,
+    "title": "Acme Analytics onboarding",
+    "theme": {
+      "tokens": {
+        "primary": "#17151a",
+        "secondary": "#f6f6f4",
+        "font": "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
+        "radius": "10px"
+      }
+    },
+    "chrome": {
+      "hideHeader": false,
+      "hideControls": false,
+      "mobileFooterMessage": true,
+      "autoplay": false,
+      "branding": true
+    },
+    "chapters": [
+      {
+        "id": "funnel",
+        "title": "Build your first funnel",
+        "stepIds": [
+          "s1",
+          "s2"
+        ]
+      },
+      {
+        "id": "segment",
+        "title": "Save a segment",
+        "stepIds": [
+          "s3"
+        ]
+      },
+      {
+        "id": "team",
+        "title": "Invite your team",
+        "stepIds": [
+          "s4",
+          "s5",
+          "s6"
+        ]
+      }
+    ],
+    "steps": [
+      {
+        "kind": "cover",
+        "id": "cover-intro",
+        "label": "Intro",
+        "widgets": [
+          {
+            "type": "headline",
+            "id": "headline-intro",
+            "title": "Get Acme Analytics set up in under two minutes",
+            "description": "Build your first funnel, save a segment and invite your team. Five clicks, all in the product.",
+            "textAlign": "middle",
+            "cta": {
+              "label": "Start the tour",
+              "action": {
+                "type": "next"
+              },
+              "animation": "shimmer"
+            }
+          }
+        ],
+        "advance": {
+          "trigger": "click"
+        }
+      },
+      {
+        "kind": "content",
+        "id": "s1",
+        "background": {
+          "type": "image",
+          "src": "assets/screen-001.png",
+          "naturalWidth": 1440,
+          "naturalHeight": 900,
+          "alt": "Overview — Acme Analytics",
+          "sourceUrl": "http://localhost:4173/app/",
+          "title": "Overview — Acme Analytics",
+          "objectFit": "cover"
+        },
+        "advance": {
+          "trigger": "click"
+        },
+        "annotations": [
+          {
+            "id": "s1_cursor",
+            "type": "message",
+            "variant": "cursor",
+            "x": 0.9486111111111111,
+            "y": 0.11888888888888889,
+            "text": "Your workspace opens on **Overview**: active users, activation and revenue at a glance. Start onboarding by building your first funnel. Click **New funnel**.",
+            "advancesStep": true,
+            "textAlign": "left",
+            "anchor": "auto",
+            "showNavigation": true,
+            "showMessage": true
+          }
+        ],
+        "label": "Start a funnel",
+        "script": "Overview is home base. From here, the first thing to set up is a funnel."
+      },
+      {
+        "kind": "content",
+        "id": "s2",
+        "background": {
+          "type": "image",
+          "src": "assets/screen-002.png",
+          "naturalWidth": 1440,
+          "naturalHeight": 900,
+          "alt": "Funnels — Acme Analytics",
+          "sourceUrl": "http://localhost:4173/app/funnels.html",
+          "title": "Funnels — Acme Analytics",
+          "objectFit": "cover"
+        },
+        "advance": {
+          "trigger": "click"
+        },
+        "annotations": [
+          {
+            "id": "s2_cursor",
+            "type": "message",
+            "variant": "cursor",
+            "x": 0.9479166666666666,
+            "y": 0.11888888888888889,
+            "text": "Acme maps the five activation steps from your events automatically, and flags the biggest drop-off for you. Looks right? Click **Save funnel**.",
+            "advancesStep": true,
+            "textAlign": "left",
+            "anchor": "auto",
+            "showNavigation": true,
+            "showMessage": true
+          }
+        ],
+        "label": "Save the funnel",
+        "script": "The activation funnel shows where new users stall, from first visit to inviting a teammate."
+      },
+      {
+        "kind": "content",
+        "id": "s3",
+        "background": {
+          "type": "image",
+          "src": "assets/screen-003.png",
+          "naturalWidth": 1440,
+          "naturalHeight": 900,
+          "alt": "Segments — Acme Analytics",
+          "sourceUrl": "http://localhost:4173/app/segments.html",
+          "title": "Segments — Acme Analytics",
+          "objectFit": "cover"
+        },
+        "advance": {
+          "trigger": "click"
+        },
+        "annotations": [
+          {
+            "id": "s3_cursor",
+            "type": "message",
+            "variant": "cursor",
+            "x": 0.9430555555555555,
+            "y": 0.11888888888888889,
+            "text": "Saved funnels feed **Segments**: reusable audiences like *Trial, day 3* or *Churn risk* that the whole team can use. Click **New segment**.",
+            "advancesStep": true,
+            "textAlign": "left",
+            "anchor": "auto",
+            "showNavigation": true,
+            "showMessage": true
+          }
+        ],
+        "label": "Build a segment",
+        "script": "Segments turn the people in your funnel into audiences you can act on."
+      },
+      {
+        "kind": "content",
+        "id": "s4",
+        "background": {
+          "type": "image",
+          "src": "assets/screen-004.png",
+          "naturalWidth": 1440,
+          "naturalHeight": 900,
+          "alt": "Settings — Acme Analytics",
+          "sourceUrl": "http://localhost:4173/app/settings.html",
+          "title": "Settings — Acme Analytics",
+          "objectFit": "cover"
+        },
+        "transform": {
+          "zoom": 1.35,
+          "x": 0.9978,
+          "y": 0.0137
+        },
+        "advance": {
+          "trigger": "click"
+        },
+        "annotations": [
+          {
+            "id": "s4_cursor",
+            "type": "message",
+            "variant": "cursor",
+            "x": 0.9354166666666667,
+            "y": 0.11888888888888889,
+            "text": "Your data sources are connected and syncing. The last onboarding step: bring your team in. Click **Invite teammates**.",
+            "advancesStep": true,
+            "textAlign": "left",
+            "anchor": "auto",
+            "showNavigation": true,
+            "showMessage": true
+          }
+        ],
+        "label": "Invite your team",
+        "script": "Workspace settings hold members, seats and connected sources."
+      },
+      {
+        "kind": "content",
+        "id": "s5",
+        "background": {
+          "type": "image",
+          "src": "assets/screen-005.png",
+          "naturalWidth": 1440,
+          "naturalHeight": 900,
+          "alt": "Invite — Acme Analytics",
+          "sourceUrl": "http://localhost:4173/app/invite.html",
+          "title": "Invite — Acme Analytics",
+          "objectFit": "cover"
+        },
+        "transform": {
+          "zoom": 1.35,
+          "x": 0.5,
+          "y": 0.5
+        },
+        "advance": {
+          "trigger": "click"
+        },
+        "annotations": [
+          {
+            "id": "s5_cursor",
+            "type": "message",
+            "variant": "cursor",
+            "x": 0.6118055555555556,
+            "y": 0.6588888888888889,
+            "text": "Add teammates by email and pick a role. Editors can build reports from day one. Click **Send invite**.",
+            "advancesStep": true,
+            "textAlign": "left",
+            "anchor": "auto",
+            "showNavigation": true,
+            "showMessage": true
+          }
+        ],
+        "label": "Send the invite",
+        "script": "Invites land teammates in this same workspace, with the funnel and segments you just set up."
+      },
+      {
+        "kind": "content",
+        "id": "s6",
+        "background": {
+          "type": "image",
+          "src": "assets/screen-006.png",
+          "naturalWidth": 1440,
+          "naturalHeight": 900,
+          "alt": "Overview — Acme Analytics",
+          "sourceUrl": "http://localhost:4173/app/index.html",
+          "title": "Overview — Acme Analytics",
+          "objectFit": "cover"
+        },
+        "advance": {
+          "trigger": "click"
+        },
+        "annotations": [
+          {
+            "id": "s6_area",
+            "type": "message",
+            "variant": "area",
+            "x": 0.1757,
+            "y": 0.1611,
+            "w": 0.8104,
+            "h": 0.1311,
+            "anchor": "bottom",
+            "showMessage": true,
+            "advancesStep": true,
+            "showNavigation": true,
+            "text": "That's onboarding done. These numbers now track the funnel you built, and your teammates see the same view the moment they accept.",
+            "nextButton": {
+              "label": "Finish"
+            }
+          }
+        ],
+        "label": "You're set up",
+        "script": "Back on Overview, with a funnel, a segment and your team in place."
+      },
+      {
+        "kind": "cover",
+        "id": "cover-outro",
+        "label": "Outro",
+        "widgets": [
+          {
+            "type": "headline",
+            "id": "headline-outro",
+            "title": "Your workspace is ready",
+            "description": "Funnel saved, segment built, team invited. Now see where your users drop off.",
+            "textAlign": "middle",
+            "cta": {
+              "label": "Replay the tour",
+              "action": {
+                "type": "restart"
+              },
+              "animation": "shimmer"
+            }
+          }
+        ],
+        "advance": {
+          "trigger": "click"
+        }
+      }
+    ]
+  }
+}

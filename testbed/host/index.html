@@ -207,6 +207,13 @@
       document.getElementById('dist').textContent = (window.__testbed && window.__testbed.dist) || '?';
 
       const pick = document.getElementById('pick');
+      // ?film=1 frames the page for filming: the embed without the testbed's
+      // picker and links under it, and room below it so a viewport that
+      // holds the whole embed does not also catch the top of the next section.
+      if (new URLSearchParams(location.search).get('film') === '1') {
+        pick.closest('.row').style.display = 'none';
+        document.getElementById('demo').style.paddingBottom = '160px';
+      }
       for (const demo of demos) {
         const option = document.createElement('option');
         option.value = demo.slug;

@@ -1,0 +1,161 @@
+{
+  "takenAt": "2026-10-01T07:45:20.530Z",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "images": {
+    "01-agent.webm": {
+      "width": 1440,
+      "height": 900,
+      "durationMs": 10400,
+      "bytes": 98504
+    },
+    "01-agent-poster.webp": {
+      "width": 2880,
+      "height": 1800,
+      "bytes": 98914
+    },
+    "02-extension.webm": {
+      "width": 1440,
+      "height": 900,
+      "durationMs": 10416,
+      "bytes": 227988
+    },
+    "02-extension-poster.webp": {
+      "width": 1440,
+      "height": 900,
+      "bytes": 37288
+    },
+    "03-editor.webp": {
+      "width": 2880,
+      "height": 1800,
+      "bytes": 117128
+    },
+    "00-cover.webp": {
+      "width": 1895,
+      "height": 2173,
+      "bytes": 74320
+    },
+    "04-ship.webm": {
+      "width": 1440,
+      "height": 900,
+      "durationMs": 4450,
+      "bytes": 192024
+    },
+    "04-ship-poster.webp": {
+      "width": 1440,
+      "height": 900,
+      "bytes": 38558
+    },
+    "05-init.webp": {
+      "width": 1520,
+      "height": 528,
+      "bytes": 21264
+    }
+  },
+  "anchors": {
+    "01-agent": {
+      "prompt": {
+        "cx": 0.3563,
+        "cy": 0.2104,
+        "left": 0.0528,
+        "top": 0.168,
+        "w": 0.6069,
+        "h": 0.0849
+      },
+      "window": {
+        "cx": 0.3563,
+        "cy": 0.4368,
+        "left": 0.0333,
+        "top": 0.0333,
+        "w": 0.6458,
+        "h": 0.8069
+      },
+      "besidePrompt": {
+        "cx": 0.6819,
+        "cy": 0.2104
+      }
+    },
+    "02-extension": {
+      "counter": {
+        "cx": 0.831,
+        "cy": 0.2071
+      },
+      "stop": {
+        "cx": 0.831,
+        "cy": 0.3543
+      },
+      "besideCounter": {
+        "cx": 0.6661,
+        "cy": 0.2071
+      },
+      "popup": {
+        "left": 0.6702,
+        "top": 0.06,
+        "w": 0.3214,
+        "h": 0.4629
+      }
+    },
+    "03-editor": {
+      "frame": {
+        "cx": 0.5,
+        "cy": 0.415,
+        "left": 0.06,
+        "top": 0.03,
+        "w": 0.88,
+        "h": 0.77
+      },
+      "zoom": 1.136,
+      "origin": {
+        "x": 0.5,
+        "y": 0.1667
+      },
+      "hotspot": {
+        "cx": 0.5147,
+        "cy": 0.2793
+      },
+      "text": {
+        "cx": 0.8376,
+        "cy": 0.3021
+      }
+    },
+    "00-cover": {
+      "frame": {
+        "width": 731,
+        "height": 838
+      },
+      "app": {
+        "width": 720,
+        "height": 838
+      },
+      "inView": {
+        "width": 0.804,
+        "height": 0.818
+      },
+      "card": {
+        "left": 0.381,
+        "right": 0.792,
+        "bottom": 0.656
+      }
+    },
+    "04-ship": {
+      "embed": {
+        "cx": 0.5,
+        "cy": 0.5163,
+        "left": 0.1306,
+        "top": 0.1168,
+        "w": 0.7389,
+        "h": 0.7989
+      },
+      "heading": {
+        "cx": 0.386,
+        "cy": 0.0822,
+        "left": 0.3376,
+        "top": 0.0653,
+        "w": 0.0969,
+        "h": 0.0338
+      }
+    }
+  }
+}
