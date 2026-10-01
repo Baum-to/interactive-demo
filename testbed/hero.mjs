@@ -75,6 +75,12 @@ function reel(browser) {
 /**
  * Scale each frame down, merge runs of identical frames into one longer frame,
  * and encode an animated WebP that loops forever.
+ *
+ * Quality stays at 86 or above. A lossy animated WebP does not repaint a
+ * block that is within a quality-dependent tolerance of the frame before it:
+ * about 9 levels at quality 52, which left pale ghosts of the previous step
+ * over every white area, and 2 to 3 at 86, which nothing shows. To save
+ * bytes, make the frame narrower or film fewer frames; do not lower quality.
  */
 async function encode(frames, file, { quality, width: outWidth = OUT_WIDTH }) {
   const scaled = [];
@@ -212,7 +218,7 @@ try {
     browser = undefined;
     // Six busy screens and a clip: a little narrower and softer than the
     // editor's film, to stay a README-sized file.
-    await encode(film.frames, 'demo.webp', { quality: 52, width: 920 });
+    await encode(film.frames, 'demo.webp', { quality: 86, width: 840 });
     await stopAll();
   }
 
@@ -258,7 +264,7 @@ try {
     await film.hold(1800);
     await browser.close();
     browser = undefined;
-    await encode(film.frames, 'editor-anim.webp', { quality: 72 });
+    await encode(film.frames, 'editor-anim.webp', { quality: 86, width: 840 });
   }
 
   step('done');
