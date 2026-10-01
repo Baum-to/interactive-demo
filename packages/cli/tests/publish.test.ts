@@ -203,7 +203,7 @@ describe('interactive-demo publish', () => {
     const body = JSON.parse(previewCall![1]?.body as string);
     expect(body.assets.assets[0]).toMatchObject({ id: `assets/${sha256}.png`, sha256, publicUrl: imagePublicUrl });
     // The frozen config points at the uploaded bytes, not the local path.
-    expect(body.config.steps[1].background.src).toBe(imagePublicUrl);
+    expect(body.config.steps[0].background.src).toBe(imagePublicUrl);
     expect(body.snapshots).toBeUndefined();
     // Local files are untouched — publish never rewrites the working tree.
     expect(await readFile(join(demoDir, 'demo.config.json'), 'utf8')).toBe(localConfigJson);

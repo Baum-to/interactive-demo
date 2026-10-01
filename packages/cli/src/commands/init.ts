@@ -16,7 +16,9 @@ import {
   type ProjectConfig,
 } from '../project.js';
 import {
+  EXTENSION_DOCS_URL,
   getProjectSkeleton,
+  SKILL_URL,
   STARTER_SLUG,
   starterDemoFiles,
   titleFromSlug,
@@ -102,23 +104,28 @@ export async function runInit(options: InitOptions): Promise<InitResult> {
   );
 
   if (!silent) {
-    // Record, write it up, ship: the order the README's quickstart walks.
-    const record =
-      `  npx interactive-demo capture start <url>   record your product; click through it,\n` +
-      `  npx interactive-demo capture stop          then stop to write it as a demo\n`;
-    const ship =
-      `\nWhen it is ready, \`npx interactive-demo login && npx interactive-demo publish\`\n` +
-      `prints a link you can share.\n` +
-      `Prefer to host it yourself? \`npm run build\` writes a folder for any static host.`;
-    // The starter teaches the format, but only if the author knows to look.
-    const tour =
-      `\nThe starter in demos/${STARTER_SLUG}/ is a short tour of what a demo can show;\n` +
-      `\`npm run dev\` plays it. Replace it with your own capture when you have one.\n`;
-    const next = options.noStarterDemo
-      ? `Next steps:\n  cd ${name}\n  npm install\n${record}  npm run dev                                preview and edit on http://localhost:3000\n\nNo Chrome to record with? \`npx interactive-demo init --demo <slug>\` adds a starter demo.\n${ship}`
-      : `Next steps:\n  cd ${name}\n  npm install\n${record}  npm run dev                                preview and edit on http://localhost:3000\n${tour}${ship}`;
+    // Capture, preview, ship: the order the generated README walks. The three
+    // ways to capture come first, because a project is empty until one runs.
+    const capture =
+      `Capture your product, one of three ways:\n` +
+      `  npx interactive-demo capture start <url>   record in Chrome; click through it,\n` +
+      `  npx interactive-demo capture stop          then stop to write it as a demo\n` +
+      `  or ask your agent to "record a demo of <url>", with the skill at\n` +
+      `     ${SKILL_URL}\n` +
+      `  or record with the Chrome extension, then  npx interactive-demo init --from <zip>\n` +
+      `     ${EXTENSION_DOCS_URL}\n`;
+    const then =
+      `\nThen:\n` +
+      `  npm run dev                                preview and edit on http://localhost:3000\n` +
+      `  npx interactive-demo login && npx interactive-demo publish\n` +
+      `                                             put it online and print a link to share\n` +
+      `  npm run build                              or write a folder for any static host\n`;
+    const starter = options.noStarterDemo
+      ? ''
+      : `\ndemos/${STARTER_SLUG}/ is a one-step placeholder; replace it with your first capture.\n`;
     process.stdout.write(
-      `Scaffolded ${options.noStarterDemo ? 'empty project' : 'project'} ${name} at ${dir}\n\n${next}\n`,
+      `Scaffolded ${options.noStarterDemo ? 'empty project' : 'project'} ${name} at ${dir}\n\n` +
+        `Next steps:\n  cd ${name}\n  npm install\n\n${capture}${then}${starter}`,
     );
   }
 
@@ -220,7 +227,7 @@ export async function runAddDemo(options: AddDemoOptions): Promise<AddDemoResult
     if (registered) msg += `Added to the demos list in ${PROJECT_FILE}\n`;
     msg += from
       ? `Next: interactive-demo dev\n`
-      : `Replace the placeholder shot in demos/${slug}/assets/, then preview with \`interactive-demo dev\`.\n`;
+      : `It is a one-step placeholder: replace it with a capture, then preview with \`interactive-demo dev\`.\n`;
     process.stdout.write(msg);
   }
 

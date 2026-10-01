@@ -74,49 +74,39 @@ describe('runInit', () => {
     // folder slug.
     expect(isValidDemoId(demo.id)).toBe(true);
     expect(demo.title).toBe('Getting Started');
-    // Intro cover, three content steps on the placeholder, outro cover.
-    expect(demo.steps.map((step: { kind: string }) => step.kind)).toEqual([
-      'cover',
-      'content',
-      'content',
-      'content',
-      'cover',
+    // One content step, on how to capture: a demo, not a lesson. No covers,
+    // no chapters.
+    expect(demo.steps).toHaveLength(1);
+    const [step] = demo.steps;
+    expect(step).toMatchObject({
+      kind: 'content',
+      label: 'Capture your first demo',
+      background: { type: 'image', src: 'assets/placeholder.png' },
+    });
+    expect(demo.chapters ?? []).toEqual([]);
+    // A pointer on each way to capture, one sentence apiece.
+    const notes = step.annotations as Array<{ type: string; variant: string; text: string }>;
+    expect(notes.map((a) => [a.type, a.variant])).toEqual([
+      ['message', 'pointer'],
+      ['message', 'pointer'],
     ]);
-    expect(demo.steps[0].widgets[0].cta).toMatchObject({ action: { type: 'next' }, animation: 'shimmer' });
-    expect(demo.steps[0].widgets[0].secondaryCta.action.type).toBe('url');
-    const shots = demo.steps.slice(1, 4);
-    for (const shot of shots) {
-      expect(shot.background).toMatchObject({ type: 'image', src: 'assets/placeholder.png' });
-    }
-    // Named segments in the progress bar, not "Step 2".
-    expect(shots.map((shot: { label: string }) => shot.label)).toEqual([
-      'Click-through',
-      'Explain',
-      'Focus and hide',
-    ]);
-    // Between them the steps show every message variant but pointer, and
-    // every annotation the editor's Annotate menu adds.
-    const kinds = shots.flatMap((shot: { annotations: Array<{ type: string; variant?: string }> }) =>
-      shot.annotations.map((a) => (a.type === 'message' ? a.variant : a.type)),
-    );
-    expect(kinds.sort()).toEqual(['area', 'blur', 'callout', 'callout', 'cursor', 'text']);
-    expect(shots[2].transform.zoom).toBeGreaterThan(1);
-    expect(shots[0].annotations[0].text).toMatch(/Every click you record becomes a step/);
-    // The outro hands over to a real capture.
-    const outro = demo.steps[4].widgets[0];
-    expect(outro.title).toBe('Your turn');
-    expect(outro.description).toContain('npx interactive-demo capture start <url>');
-    expect(outro.secondaryCta.action.type).toBe('restart');
-    expect(demo.chapters[0].stepIds).toEqual(['shot-1', 'shot-2', 'shot-3']);
+    expect(notes[0]!.text).toContain('capture start');
+    expect(notes[1]!.text).toMatch(/extension/);
+    for (const note of notes) expect(note.text.split(/[.!?](?:\s|$)/).filter((s) => s.trim()).length).toBe(1);
+    expect(step.script.length).toBeLessThan(100);
 
     expect((await stat(join(result.dir, 'demos', 'getting-started', 'assets', 'placeholder.png'))).isFile()).toBe(true);
 
-    // The README walks record → edit → publish, with self-hosting beside it.
+    // The README leads with the ways to capture — the CLI, an agent, the
+    // extension — then edit, publish, and self-hosting beside it.
     const readme = await readFile(join(result.dir, 'README.md'), 'utf8');
     const order = [
       'npm install',
       'npx interactive-demo capture start',
       'npx interactive-demo capture stop',
+      'skills/interactive-demo/SKILL.md',
+      'docs.inklyai.dev/open-source/capture#the-chrome-extension',
+      'npx interactive-demo init --from',
       'npm run dev',
       'npx interactive-demo login && npx interactive-demo publish',
       'npm run build',
@@ -129,7 +119,7 @@ describe('runInit', () => {
     expect(ignore).toContain('dist/');
   });
 
-  it('prints next steps that record, preview, then publish', async () => {
+  it('prints next steps that capture, preview, then publish', async () => {
     const writes: string[] = [];
     const spy = vi.spyOn(process.stdout, 'write').mockImplementation(((chunk: unknown) => {
       writes.push(String(chunk));
@@ -145,14 +135,18 @@ describe('runInit', () => {
       'npm install',
       'npx interactive-demo capture start <url>',
       'npx interactive-demo capture stop',
+      'ask your agent',
+      'skills/interactive-demo/SKILL.md',
+      'npx interactive-demo init --from <zip>',
+      'https://docs.inklyai.dev/open-source/capture#the-chrome-extension',
       'npm run dev',
       'npx interactive-demo login && npx interactive-demo publish',
       'npm run build',
     ].map((needle) => text.indexOf(needle));
     expect(order.every((at) => at >= 0)).toBe(true);
     expect([...order].sort((a, b) => a - b)).toEqual(order);
-    // And it says the starter is there to be watched.
-    expect(text).toContain('The starter in demos/getting-started/ is a short tour');
+    // And it says the starter is only a placeholder.
+    expect(text).toContain('demos/getting-started/ is a one-step placeholder');
   });
 
   it('--no-starter-demo scaffolds an empty project with an empty demos list', async () => {
@@ -181,7 +175,7 @@ describe('runInit', () => {
 });
 
 describe('starter demo on its placeholder', () => {
-  it('lands every annotation and the zoom on the element it describes', async () => {
+  it('lands each hotspot on the element it describes', async () => {
     // The placeholder is drawn by scripts/placeholder.mjs, which lists the
     // pixel box of each element the starter points at. The starter carries
     // them as fractions; moving one without the other fails here.
@@ -189,7 +183,7 @@ describe('starter demo on its placeholder', () => {
     const { WIDTH, HEIGHT, TARGETS } = (await import(design)) as {
       WIDTH: number;
       HEIGHT: number;
-      TARGETS: Record<'newReport' | 'stats' | 'chart' | 'customers' | 'customerDetails', Box>;
+      TARGETS: Record<'cliCommand' | 'recordButton' | 'popup', Box>;
     };
     const norm = (b: Box): Box => ({ x: b.x / WIDTH, y: b.y / HEIGHT, w: b.w / WIDTH, h: b.h / HEIGHT });
     const slack = 0.002;
@@ -204,41 +198,21 @@ describe('starter demo on its placeholder', () => {
       steps: Array<{
         id: string;
         background?: { naturalWidth: number; naturalHeight: number };
-        transform?: { zoom: number; x: number; y: number };
-        annotations?: Array<Box & { id: string }>;
+        annotations?: Array<Box & { id: string; anchor: string }>;
       }>;
     };
-    const step = (id: string) => demo.steps.find((s) => s.id === id)!;
-    const note = (stepId: string, id: string) => step(stepId).annotations!.find((a) => a.id === id)!;
-    for (const id of ['shot-1', 'shot-2', 'shot-3']) {
-      expect(step(id).background).toMatchObject({ naturalWidth: WIDTH, naturalHeight: HEIGHT });
-    }
+    const step = demo.steps[0]!;
+    expect(step.background).toMatchObject({ naturalWidth: WIDTH, naturalHeight: HEIGHT });
+    const note = (id: string) => step.annotations!.find((a) => a.id === id)!;
 
-    // The click sits on the button.
-    expect(within(point(note('shot-1', 'shot-1-click')), norm(TARGETS.newReport))).toBe(true);
-
-    // The area frames the stat cards, with no more than a small margin.
-    const area = note('shot-2', 'shot-2-area');
-    const stats = norm(TARGETS.stats);
-    expect(within(stats, area)).toBe(true);
-    expect(area.w - stats.w).toBeLessThan(0.02);
-    expect(area.h - stats.h).toBeLessThan(0.03);
-    expect(within(point(note('shot-2', 'shot-2-callout')), norm(TARGETS.chart))).toBe(true);
-
-    // The blur covers the names and emails, and stays inside their card.
-    const blur = note('shot-3', 'shot-3-blur');
-    expect(within(norm(TARGETS.customerDetails), blur)).toBe(true);
-    expect(within(blur, norm(TARGETS.customers))).toBe(true);
-    expect(within(point(note('shot-3', 'shot-3-label')), blur)).toBe(true);
-
-    // The zoom (scaled about its focal point) shows the whole chart and the
-    // customer list, and nothing past the edge of the image.
-    const { zoom, x: fx, y: fy } = step('shot-3').transform!;
-    const view: Box = { x: fx * (1 - 1 / zoom), y: fy * (1 - 1 / zoom), w: 1 / zoom, h: 1 / zoom };
-    expect(within(norm(TARGETS.chart), view)).toBe(true);
-    expect(within(norm(TARGETS.customers), view)).toBe(true);
-    expect(within(point(note('shot-3', 'shot-3-callout')), view)).toBe(true);
-    expect(within(point(note('shot-3', 'shot-3-callout')), norm(TARGETS.chart))).toBe(true);
+    // One pointer on the `capture start` command, one on Start Recording.
+    expect(within(point(note('capture-cli')), norm(TARGETS.cliCommand))).toBe(true);
+    expect(within(point(note('capture-extension')), norm(TARGETS.recordButton))).toBe(true);
+    expect(within(norm(TARGETS.recordButton), norm(TARGETS.popup))).toBe(true);
+    // Both cards open downward, into room the design leaves for them, not
+    // over the command or the popup's name and step count above.
+    expect(note('capture-cli').anchor).toBe('bottom');
+    expect(note('capture-extension').anchor).toBe('bottom');
   });
 });
 
@@ -265,7 +239,7 @@ describe('runAddDemo', () => {
     expect(isValidDemoId(demo.id)).toBe(true);
     expect(demo.id).toBe(result.id);
     expect(demo.title).toBe('Checkout');
-    expect(demo.steps).toHaveLength(5);
+    expect(demo.steps).toHaveLength(1);
     expect((await stat(join(result.demoDir, 'assets', 'placeholder.png'))).isFile()).toBe(true);
 
     expect(result.registered).toBe(true);

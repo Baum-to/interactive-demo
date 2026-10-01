@@ -47,8 +47,7 @@ Options:
   --no-starter-demo      Scaffold an EMPTY project (no \`getting-started\`
                          sample demo).
   --demo <slug>          Inside an existing project: add demos/<slug>/ with a
-                         starter demo (an intro cover, one content step on a
-                         placeholder screenshot, an outro cover).
+                         one-step placeholder demo on how to capture.
   --from <dir|zip>       Import an existing demo folder, or a capture .zip of
                          one, instead of scaffolding. --demo defaults to the
                          source's name (minus .zip). The folder must hold a

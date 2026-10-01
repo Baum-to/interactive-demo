@@ -65,39 +65,34 @@ const PLACEHOLDER_WIDTH = 1920;
 const PLACEHOLDER_HEIGHT = 1080;
 
 /**
- * The placeholder is a neutral wireframe of a generic web app — sidebar,
- * header with a primary button, stat cards, a chart and a customer list —
- * so the starter's hotspot, area, blur and zoom land on plausible UI. Its
- * design is `placeholderSvg()` in scripts/placeholder.mjs, which also lists
- * the pixel box of every element the starter points at; regenerate the PNG
- * after changing it:
+ * The placeholder shows the two ways to record a first demo, side by side: a
+ * terminal running `capture start` (or the same thing asked of an agent), and
+ * Chrome with the Interactive Demo Capture extension's popup open. Its design
+ * is `placeholderSvg()` in scripts/placeholder.mjs, which also lists the pixel
+ * box of every element the starter points at; regenerate the PNG after
+ * changing it:
  *
  *   npm run build:placeholder -w @inkly-org/interactive-demo-cli
  *
  * The coordinates below are those boxes as fractions of the image, and
- * tests/init.test.ts holds the two together. The author swaps the
- * placeholder for a real capture (run `interactive-demo capture start <url>`,
- * or upload a screenshot in the editor and point the step at it).
+ * tests/init.test.ts holds the two together. The author replaces the step
+ * with a real capture.
  */
 const PLACEHOLDER_BACKGROUND = {
   type: 'image',
   src: `assets/${PLACEHOLDER_FILE}`,
   naturalWidth: PLACEHOLDER_WIDTH,
   naturalHeight: PLACEHOLDER_HEIGHT,
-  alt: 'Placeholder screen — replace with your capture',
+  alt: 'Two ways to capture a demo: the interactive-demo CLI in a terminal, or the Interactive Demo Capture extension in Chrome',
   objectFit: 'cover',
 } as const;
 
-const DOCS_URL = 'https://github.com/inkly-ai/interactive-demo#readme';
-
 /**
- * Starter demo: a short tour that shows what a demo can carry and names the
- * editor menu each piece comes from, so the first `npm run dev` teaches the
- * format before the author replaces it with a capture. An intro cover, three
- * content steps on the placeholder (a click, a callout and an area, a zoom
- * with a blur and a text label) and an outro cover. A fresh, opaque `id` is
- * minted via `generateDemoId()`; a demo's identity is permanent and
- * independent of its folder slug.
+ * Starter demo: one step, on how to capture the real thing. It is a demo, not
+ * a lesson: the screen shows the CLI (which an agent can drive too) beside
+ * the Chrome extension, with a hotspot on each, and the author's first
+ * capture replaces it. A fresh, opaque `id` is minted via `generateDemoId()`;
+ * a demo's identity is permanent and independent of its folder slug.
  */
 export function starterDemoConfig(slug: string, title?: string): unknown {
   return {
@@ -107,160 +102,40 @@ export function starterDemoConfig(slug: string, title?: string): unknown {
     title: title ?? titleFromSlug(slug),
     theme: DEFAULT_DEMO_THEME,
     chrome: DEFAULT_DEMO_CHROME,
-    chapters: [
-      { id: 'walkthrough', title: 'Walkthrough', stepIds: ['shot-1', 'shot-2', 'shot-3'] },
-    ],
     steps: [
       {
-        kind: 'cover',
-        id: 'cover-intro',
-        widgets: [
-          {
-            type: 'headline',
-            id: 'headline-intro',
-            title: 'Your first interactive demo',
-            description:
-              'A short tour of what a demo can do: clicks, callouts, zoom and blur. Then make it yours.',
-            textAlign: 'middle',
-            cta: {
-              label: 'Start the tour',
-              action: { type: 'next' },
-              animation: 'shimmer',
-            },
-            secondaryCta: {
-              label: 'Read the docs',
-              action: { type: 'url', href: DOCS_URL, target: '_blank' },
-              animation: 'none',
-              background: '#ffffff',
-              textColor: '#1d2130',
-            },
-          },
-        ],
-        advance: { trigger: 'click' },
-      },
-      {
         kind: 'content',
-        id: 'shot-1',
-        label: 'Click-through',
+        id: 'capture',
+        label: 'Capture your first demo',
         background: PLACEHOLDER_BACKGROUND,
-        script:
-          'Every click you record becomes a step like this one: your screen, with the cursor on what you clicked.',
+        script: 'Record your product with the CLI, your agent or the Chrome extension.',
         advance: { trigger: 'click' },
         annotations: [
           {
-            // On the "New report" button in the header, right of its label
-            // so the cursor doesn't cover it.
-            id: 'shot-1-click',
+            // On the prompt of the terminal's first command, so the command
+            // itself stays readable; its card drops into the gap under it.
+            id: 'capture-cli',
             type: 'message',
-            variant: 'cursor',
-            x: 0.9542,
-            y: 0.0481,
-            anchor: 'bottom',
-            showMessage: true,
-            text: 'Every click you record becomes a step like this one, with the cursor on what you clicked. Click **New report** to go on.',
-          },
-        ],
-      },
-      {
-        kind: 'content',
-        id: 'shot-2',
-        label: 'Explain',
-        background: PLACEHOLDER_BACKGROUND,
-        script: 'Areas and callouts explain what the viewer is looking at.',
-        advance: { trigger: 'click' },
-        annotations: [
-          {
-            // Around the row of four stat cards.
-            id: 'shot-2-area',
-            type: 'message',
-            variant: 'area',
-            x: 0.175,
-            y: 0.1074,
-            w: 0.8063,
-            h: 0.1704,
+            variant: 'pointer',
+            x: 0.0849,
+            y: 0.3509,
             anchor: 'bottom',
             showNavigation: false,
-            text: 'An **Area** frames a region, like these numbers.',
+            text: 'Run **capture start** with your app\'s URL, click through it, then **capture stop**.',
           },
           {
-            // Over the chart, which this step isn't about.
-            id: 'shot-2-callout',
+            // On the record glyph of the extension popup's Start Recording
+            // button; its card hangs over the page below the popup.
+            id: 'capture-extension',
             type: 'message',
-            variant: 'callout',
-            x: 0.3766,
-            y: 0.6667,
-            anchor: 'auto',
-            text: 'A **Callout** pins a note anywhere. Add either one, or a Cursor or Pointer, from the editor\'s **Message** menu.',
+            variant: 'pointer',
+            x: 0.7417,
+            y: 0.6231,
+            anchor: 'bottom',
+            showNavigation: false,
+            text: 'Or record in your own Chrome with the extension, and download the ZIP.',
           },
         ],
-      },
-      {
-        kind: 'content',
-        id: 'shot-3',
-        label: 'Focus and hide',
-        background: PLACEHOLDER_BACKGROUND,
-        script: 'Zoom frames what matters, and blur hides anything private.',
-        // Frames the chart and the customer list beside it at 1.5x.
-        transform: { zoom: 1.5, x: 0.475, y: 0.8333 },
-        advance: { trigger: 'click' },
-        annotations: [
-          {
-            // The names and emails in the customer list.
-            id: 'shot-3-blur',
-            type: 'blur',
-            x: 0.6208,
-            y: 0.3778,
-            w: 0.1432,
-            h: 0.5185,
-            intensity: 8,
-          },
-          {
-            id: 'shot-3-label',
-            type: 'text',
-            x: 0.6924,
-            y: 0.6370,
-            text: '**Hidden with Blur**',
-            fontSize: 16,
-            color: '#4656f0',
-          },
-          {
-            // In the empty top-left of the chart's plot, above the line.
-            id: 'shot-3-callout',
-            type: 'message',
-            variant: 'callout',
-            x: 0.33,
-            y: 0.52,
-            anchor: 'auto',
-            text: 'The editor\'s **Annotate** menu adds these: **Zoom** to frame what matters, **Blur** to hide private data, **Text** for a label.',
-          },
-        ],
-      },
-      {
-        kind: 'cover',
-        id: 'cover-outro',
-        widgets: [
-          {
-            type: 'headline',
-            id: 'headline-outro',
-            title: 'Your turn',
-            description:
-              'Replace these screens with your own: record your product with `npx interactive-demo capture start <url>`, then publish it for a link to share.',
-            textAlign: 'middle',
-            cta: {
-              label: 'Read the docs',
-              action: { type: 'url', href: DOCS_URL, target: '_blank' },
-              animation: 'shimmer',
-            },
-            secondaryCta: {
-              label: 'Replay',
-              action: { type: 'restart' },
-              animation: 'none',
-              background: '#ffffff',
-              textColor: '#1d2130',
-            },
-          },
-        ],
-        advance: { trigger: 'click' },
       },
     ],
   };
@@ -301,6 +176,13 @@ function projectPackageJson(name: string, cliVersion: string): string {
   );
 }
 
+/** Where the README and `init` send people for the Chrome extension. */
+export const EXTENSION_DOCS_URL =
+  'https://docs.inklyai.dev/open-source/capture#the-chrome-extension';
+/** The agent skill that drives the CLI. */
+export const SKILL_URL =
+  'https://github.com/inkly-ai/interactive-demo/blob/main/skills/interactive-demo/SKILL.md';
+
 function projectReadme(name: string): string {
   return `# ${name}
 
@@ -314,18 +196,32 @@ the steps, and the screenshots and recordings it references under
 npm install
 \`\`\`
 
-## Record your product
+## Capture your product
 
-Needs Google Chrome.
+Click through your product once; every click becomes a step. Pick a way:
 
-\`\`\`bash
-npx interactive-demo capture start https://app.example.com
-# click through the product in the window that opens
-npx interactive-demo capture stop
-\`\`\`
+- **The CLI.** Needs Google Chrome.
 
-Every click becomes a step, with the pointer where you clicked. \`stop\`
-writes the recording as a new demo under \`demos/\`.
+  \`\`\`bash
+  npx interactive-demo capture start https://your.app
+  # click through the product in the window that opens
+  npx interactive-demo capture stop
+  \`\`\`
+
+  \`stop\` writes the recording as a new demo under \`demos/\`.
+
+- **Your agent.** Point it at the [agent skill](${SKILL_URL}) and ask:
+  "record a demo of https://your.app". It runs the same commands.
+
+- **The [Chrome extension](${EXTENSION_DOCS_URL}).** Record in your own
+  browser, download the ZIP, then:
+
+  \`\`\`bash
+  npx interactive-demo init --from ~/Downloads/<file>.zip
+  \`\`\`
+
+The \`getting-started\` demo is a one-step placeholder. Once you have your own,
+delete its folder and its entry in \`${PROJECT_FILE}\`.
 
 ## Preview and edit
 

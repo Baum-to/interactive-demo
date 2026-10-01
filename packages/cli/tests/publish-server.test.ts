@@ -254,7 +254,7 @@ describe('publish against a fake hosting server', () => {
       sha256,
       publicUrl: `${base}/cdn/${cdnFor(sha256, '.png')}`,
     });
-    expect(body.config.steps[1].background.src).toBe(`${base}/cdn/${cdnFor(sha256, '.png')}`);
+    expect(body.config.steps[0].background.src).toBe(`${base}/cdn/${cdnFor(sha256, '.png')}`);
     expect(body.config.steps.length).toBeGreaterThan(0);
   });
 
