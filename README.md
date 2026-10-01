@@ -1,8 +1,8 @@
 <h1 align="center">interactive-demo</h1>
 
 <p align="center">
-  <strong>Turn a click-through of your product into an interactive demo.</strong><br>
-  Record it from the real app, write it up in a local editor, ship it as a link or a folder.
+  <strong>Agent-native interactive product demos.</strong><br>
+  Your agent records, writes and ships them — for product marketing, onboarding, pre-sales, training and enablement.
 </p>
 
 <p align="center">
@@ -12,33 +12,43 @@
   <img alt="Node 20+" src="https://img.shields.io/badge/node-%E2%89%A520-brightgreen.svg">
 </p>
 
-<p align="center">
-  <a href="https://youtu.be/Mus1gXwJIJU"><img alt="Watch the launch video: interactive-demo, open-source interactive product demos, by Inkly" src="docs/images/launch-video.jpg" width="720"></a><br>
-  <a href="https://youtu.be/Mus1gXwJIJU"><strong>▶ Watch the launch video</strong></a>
-</p>
+https://github.com/user-attachments/assets/3faa17ec-2030-428d-9047-c277e29866ab
+
+<p align="center"><a href="https://interactive-demo.inklyai.dev/p/AMrDQaVQfiHtHbkRhcI9Ew"><strong>▶ Try the live demo</strong></a> · <a href="https://youtu.be/Mus1gXwJIJU">Watch the launch video on YouTube</a></p>
 
 ## What you get
 
 Screenshots or short clips of your real product, with hotspots on top,
-playing as a click-through a viewer drives themselves.
+playing as a click-through a viewer drives themselves — kept as plain files
+your agent can make and maintain.
 
-![A demo playing: the cover, a captured screen with the cursor on the control that was clicked, the editor, the share dialog, and both embeds](docs/images/demo.webp)
+![The showcase playing: the cover, a Claude Code session making a demo from one prompt, the Chrome extension recording one, the editor, the demo embedded in a page, and the outro](docs/images/demo.webp)
 
-<p align="center"><em>Every screen above is a real screenshot of this tool, captured by this tool.<br>
-It lives in <a href="examples/self-demo">examples/self-demo</a>, whose screens are re-shot by <code>node testbed/shoot.mjs</code> and this animation by <code>node testbed/hero.mjs</code>.</em></p>
+<p align="center"><em>Every screen above is real: a Claude Code session using this repo's skill, this CLI, this editor.<br>
+It lives in <a href="examples/showcase">examples/showcase</a>, whose screens are re-shot by <code>node testbed/shoot-showcase.mjs</code> and this animation by <code>npm run hero</code>.</em></p>
 
-- **One command to a link.** `publish` puts the demo online and prints its URL.
-  Publishing again updates the same link, so embeds keep working.
-- **Or host it yourself.** `build` writes a self-contained folder that runs on
-  any static host. Nothing in it phones home, and the embed snippets are
+- **Your agent does the work.** The [agent skill](skills/interactive-demo/SKILL.md) in this repo
+  teaches Claude Code, Codex or another agent the whole loop: scaffold,
+  capture, write the copy, validate, publish. Ask for "a demo of our
+  onboarding flow" and review what comes back.
+- **Plain files in your repo.** A demo is a `demo.config.json` and an
+  `assets/` folder, with no manifest to keep in step. Your agent edits it like any
+  other file, the diff is reviewable, and when the product changes it can
+  re-capture the screens and fix the copy.
+- **Capture two ways.** From the terminal, `capture start` opens Chrome and
+  every click becomes a step, with the pointer where you clicked; scroll or
+  type before a click and that step is a short video instead. Or record in
+  your own browser with the
+  [Chrome extension](https://docs.inklyai.dev/open-source/capture#the-chrome-extension)
+  and import the zip.
+- **An editor for the humans.** `dev` serves a local editor that writes
+  straight back to the same files: hotspots, zoom, blur, covers, voiceover.
+- **One command to a link — or host it yourself.** `publish` puts the demo
+  online and prints its URL; publishing again updates the same link, so
+  embeds keep working. `build` writes a self-contained folder for any static
+  host instead. Nothing in it phones home, and the embed snippets are
   identical either way — only the origin differs.
 - **A React component too.** `<Demo>` and `<DemoModal>`, if your site is React.
-- **Capture from the live app.** Click through your product in Chrome; every
-  click becomes a step, with the pointer where you clicked. Scroll or type
-  before a click and that step is recorded as a short video instead.
-- **Narrate it.** Record a voiceover for any step in the editor, or attach an
-  audio file; the step lasts at least as long as its narration.
-- **Every feature in one demo.** [examples/showcase](examples/showcase) is a product tour of a stand-in analytics app that uses all of it.
 
 ## Quickstart
 
@@ -47,7 +57,15 @@ npx @inkly-org/interactive-demo-cli init my-demos
 cd my-demos && npm install
 ```
 
-**Record your product** (needs Google Chrome — see [requirements](#requirements)):
+**Let your agent make it.** Give it the [skill](skills/interactive-demo/SKILL.md)
+— for Claude Code, copy it to `.claude/skills/interactive-demo/SKILL.md` in
+the project — and ask:
+
+```
+Make an interactive demo of our onboarding flow at https://app.example.com
+```
+
+**Or record it yourself** (needs Google Chrome — see [requirements](#requirements)):
 
 ```sh
 npx interactive-demo capture start https://app.example.com --name "Onboarding"
@@ -56,7 +74,7 @@ npx interactive-demo capture stop
 ```
 
 **Write it up.** Capture gives you structure, not writing — the words on each
-step are the demo:
+step are the demo. Your agent edits `demo.config.json`; you can use the editor:
 
 ```sh
 npm run dev     # preview on :3000, editor at /__demo/editor/
@@ -74,11 +92,11 @@ That is the whole hosting step. Nothing to deploy, nothing to configure.
 
 `dev` serves a browser editor that writes straight back to the demo's files in
 your repo — hotspots and their text, blur and zoom, voiceover, covers and
-their buttons, step order, crop and trim, the demo's look. Your hand-written
-`demo.config.json` survives a round trip through it: key order kept,
-`$schema` first, defaults you never set left out.
+their buttons, step order, crop and trim, the demo's look. A `demo.config.json`
+written by hand or by an agent survives a round trip through it: key order
+kept, `$schema` first, defaults you never set left out.
 
-![The editor: the filmstrip on the right, the preview in the middle, the annotation toolbar below](docs/images/editor-anim.webp)
+![The editor: the filmstrip on the right, the preview in the middle, the annotation toolbar below, and a hotspot opened for editing](docs/images/editor-anim.webp)
 
 ## Host it yourself instead
 
@@ -117,7 +135,7 @@ import '@inkly-org/interactive-demo/styles.css';
 
 `src` is a copy of the demo's source folder (`demos/<slug>/`, not the built
 one) served by your app — the component fetches `demo.config.json` from it and
-loads the media next to it. [docs/embedding.md](docs/embedding.md) walks the
+loads the media next to it. [Sharing and embedding](https://docs.inklyai.dev/open-source/embedding) walks the
 whole choice, plus hosting, sizing and events.
 
 <details>
@@ -155,19 +173,21 @@ folder.
 
 ## Docs
 
+The guides live at [docs.inklyai.dev/open-source](https://docs.inklyai.dev/open-source/overview).
+
 | | |
 |---|---|
-| [Authoring](docs/authoring.md) | project layout, steps, hotspots, captions, chapters, voiceover |
-| [Capturing](docs/capture.md) | the record-and-click loop, video steps, recovering a session |
-| [The editor](docs/editor.md) | what you can change, autosave, how edits land in your files |
-| [CLI reference](docs/cli.md) | every command, flag and default |
-| [Runtime / React API](docs/runtime.md) | `<Demo>`, the page contract, events, the theme |
+| [Authoring](https://docs.inklyai.dev/open-source/authoring) | project layout, steps, hotspots, captions, chapters, voiceover |
+| [Capturing](https://docs.inklyai.dev/open-source/capture) | the record-and-click loop, video steps, recovering a session, the Chrome extension |
+| [The editor](https://docs.inklyai.dev/open-source/editor) | what you can change, autosave, how edits land in your files |
+| [CLI reference](https://docs.inklyai.dev/open-source/cli) | every command, flag and default |
+| [Runtime / React API](https://docs.inklyai.dev/open-source/runtime) | `<Demo>`, the page contract, events, the theme |
 | [`demo.config.json`](docs/schema.md) | every field, generated from the schema |
-| [Sharing and embedding](docs/embedding.md) | link, iframe, pop-up or React — and who hosts it |
+| [Sharing and embedding](https://docs.inklyai.dev/open-source/embedding) | link, iframe, pop-up or React — and who hosts it |
 | [Architecture](docs/architecture.md) | how the packages fit together, the build graph, CI |
 
-There is also an [agent skill](skills/interactive-demo/SKILL.md) — point Claude
-Code, Codex or another agent at it and it can drive the whole CLI for you.
+Agents start from the [skill](skills/interactive-demo/SKILL.md): the command
+map, the shape of the job, and the gotchas, in one file.
 
 ## Contributing
 
