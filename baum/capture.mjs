@@ -62,9 +62,9 @@ async function applySession(context, session) {
  * @param {object} [opts.session]    Playwright storage state for the persona.
  * @param {Function[]} [opts.initScripts]  Page init scripts (tidy state).
  * @param {string[]} [opts.rehearse] URLs visited off camera first.
- * @param {(page, opts: {keys: boolean}) => Promise<number>} [opts.tidy]
- *        Dismisses first-run prompts; returns how many clicks it made, which
- *        the capture then undoes. `keys: false` during capture.
+ * @param {(page, opts: {keys: boolean}) => Promise<unknown>} [opts.tidy]
+ *        Dismisses first-run prompts. Steps it adds during the capture are
+ *        undone. `keys: false` during capture, so no key presses are recorded.
  * @param {(page, label: string) => Promise<void>} [opts.assertTidy]
  * @param {{name: string, prepare?: Function, target: Function, center?: boolean, after?: Function}[]} opts.steps
  *        One capture step per entry. `prepare(page, vars)` runs before the
@@ -121,18 +121,24 @@ export async function captureDemo(opts) {
     await page.waitForLoadState('networkidle');
     await warm.close();
 
+    // Tidy-up clicks may or may not be recorded as steps (a prompt can close
+    // before the recorder sees the click), so undo exactly the steps added.
+    const tidyUndone = async () => {
+      const before = await stepCount();
+      await tidy(page, { keys: false });
+      const extra = (await stepCount()) - before;
+      for (let i = 0; i < extra; i++) await call('capture', 'undo');
+      if (extra > 0) log(`  undid ${extra} first-run dismissal step(s)`);
+    };
     const vars = {};
     for (const step of opts.steps) {
-      const before = await stepCount();
-      const undo = async (n) => {
-        for (let i = 0; i < n; i++) await call('capture', 'undo');
-      };
-      await undo(await tidy(page, { keys: false }));
+      await tidyUndone();
       if (step.prepare) {
         await step.prepare(page, vars);
         await page.waitForLoadState('networkidle');
-        await undo(await tidy(page, { keys: false }));
+        await tidyUndone();
       }
+      const before = await stepCount();
       await page.mouse.move(720, 450);
       await assertTidy(page, step.name);
       const target = step.target(page, vars);
