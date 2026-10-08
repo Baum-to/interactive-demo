@@ -1,0 +1,14 @@
+{
+  "name": "@baum/interactive-demo-capture",
+  "private": true,
+  "version": "0.1.7-baum.1",
+  "description": "Baum capture driver for Inkly interactive-demo: scripted clicks in a signed-in Chrome become demo steps. Product-agnostic; callers supply sign-in state, tidy hooks and the click plan.",
+  "license": "MIT",
+  "type": "module",
+  "main": "capture.mjs",
+  "engines": { "node": ">=20" },
+  "dependencies": {
+    "@inkly-org/interactive-demo-cli": "0.1.7",
+    "playwright-core": "1.64.0"
+  }
+}
