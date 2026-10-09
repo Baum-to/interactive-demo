@@ -24,5 +24,17 @@ cd baum && SHARP_IGNORE_GLOBAL_LIBVIPS=1 npm install
 Needs Google Chrome (or `CHROME_PATH`). Never use Inkly's hosted `login`,
 `publish` or `embed` from Baum tooling; host the built folder yourself.
 
+Open the local human editor with one command:
+
+```bash
+./open-editor.command /path/to/interactive-demo-project
+```
+
+The launcher remembers that project in
+`~/.config/baum/inkly-editor-project`, chooses a free loopback port, opens
+`/__demo/editor/` in the default browser and keeps the self-hosted server in
+the foreground. Later runs can omit the path. It never calls Inkly's hosted
+login, publish or embed commands.
+
 Consumers: Virtual CoSec's media kit (`media/demos`), which finds this package
 through `INTERACTIVE_DEMO_HOME` (default `~/Tools/interactive-demo/baum`).
